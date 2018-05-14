@@ -1,6 +1,6 @@
 """
 This code is only executed when the aperture directory
-is called as a script (via 'python -m aperture/'); serves
+is called as a script (via 'python aperture/'); serves
 as a convience wrapper.
 """
 

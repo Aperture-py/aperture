@@ -34,7 +34,8 @@ def main():
     options = docopt(__doc__, version=VERSION)
 
     for (k, v) in options.items():
-        if hasattr(aperture.commands, k) and v: # check if the entered command matches an instance of a command class
+        # check if the entered command matches an instance of a command class
+        if hasattr(aperture.commands, k) and v:
             module = getattr(aperture.commands, k)
             aperture.commands = getmembers(module, isclass)
             command = [
