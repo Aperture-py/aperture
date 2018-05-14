@@ -1,0 +1,6 @@
+# Packages for development environment.
+# Run 'pip install -r requirements.txt' to install the packages.
+
+pylint # Python linter
+yapf   # Python code formatter
+wheel  # Distribution build tool
