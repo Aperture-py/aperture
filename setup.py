@@ -15,8 +15,8 @@ setup(
     version=VERSION,
     description='An image re-sizing and compression tool',
     long_description=readme,
-    url='https://github.com/jamessalvatore/aperture',
-    author='salvatorej1@wit.edu, kennedyd3@wit.edu, arobbins@wit.edu',
+    url='https://github.com/Aperture-py/aperture',
+    author='salvatorej1@wit.edu, kennedyd3@wit.edu, robbinsa@wit.edu',
     license=license,
     install_requires=['docopt'],
     entry_points={
