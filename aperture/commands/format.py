@@ -27,9 +27,9 @@ Can also take in:
 -c : Whether or not to compress. ('###' can be 0 to 100. Represents desired output quality)
 
 ##### Possible formats for cmd-line args #####
-(MY FAV AND HOW IT IS CURRENTLY) aperture hello [<inputs>...] [-o <opath>] [-c <qual>] [-r <res>...]
+(MY FAV AND HOW IT IS CURRENTLY) aperture format [<inputs>...] [-o <opath>] [-c <qual>] [-r <res>...]
     -Accepts any number of space delimited input files and/or directories
-(NOT MY FAV BUT STILL GOOD) aperture hello [-f <ifiles>...|-d <ipath>] [-o <opath>] [-r <res>...] [-c <qual>]
+(NOT MY FAV BUT STILL GOOD) aperture format [-f <ifiles>...|-d <ipath>] [-o <opath>] [-r <res>...] [-c <qual>]
     -Accepts and number of files ***OR*** directories based on provided flag.
     -Each file must come after a '-f' flag and each dir must come after a '-d' flag. 
 
