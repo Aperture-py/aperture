@@ -15,10 +15,10 @@ setup(
     version=VERSION,
     description='An image re-sizing and compression tool',
     long_description=readme,
-    url='https://github.com/jamessalvatore/aperture',
-    author='salvatorej1@wit.edu, kennedyd3@wit.edu, arobbins@wit.edu',
+    url='https://github.com/Aperture-py/aperture',
+    author='salvatorej1@wit.edu, kennedyd3@wit.edu, robbinsa@wit.edu',
     license=license,
-    install_requires=['docopt'],
+    install_requires=['docopt', 'pillow'],
     entry_points={
         'console_scripts': ['aperture = aperture.cli:main']
     },  # run the cli main function when aperture is run from the command line (i.e. '$ aperture')

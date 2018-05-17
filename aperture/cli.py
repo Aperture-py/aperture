@@ -2,20 +2,24 @@
 
 # DO NOT REMOVE - docopt uses the below docstring to describe the Aperture interface
 # ===========================================================================
+
 """
 
 Usage:
-  aperture hello
+  aperture format [<inputs>...] [-o <opath>] [-c <qual>] [-r <res>...]
 
 Commands:
-  hello                         Say hello to Aperture.
+  format                        Format images.
 
 Options:
   -h --help                     Show help.
-  -v --version                  Show version
+  -v --version                  Show version.
+  -o <opath>                    Output directory for formatted images.
+  -r <res>...                   Desired resolutions for output images.
+  -c <qual>                     Quality of output images [0-100]. Lower number means lower quality but smaller files. Larger number means higher quality but larger files. [default: 75]
 
 Examples:
-  aperture hello
+  aperture format [<inputs>...] [-o <opath>] [-c <qual>] [-r <res>...]
 
 Help:
   For help using this tool...
