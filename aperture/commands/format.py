@@ -1,7 +1,6 @@
 from .command import Command
 from PIL import Image
-import glob, os, ntpath #EX: glob.glob("*.jpg") will get all files in current directory that are jpegs.
-
+import os, ntpath
 """
 NOTES:
 
@@ -34,14 +33,23 @@ Can also take in:
 
 """
 
+
 class Format(Command):
     """
     'format' command.
     """
+
     def run(self):
-        DEFAULT_RESOLUTIONS = [(200,200), (500,500)] #TODO: Make this do something
+        #TODO: Make this do something
+        DEFAULT_RESOLUTIONS = [(200, 200), (500, 500)]
         DEFAULT_QUALITY = 75
-        DEFAULT_DIR = os.getcwd() #Default directory is current working directory
+        #Default directory is current working directory
+        DEFAULT_DIR = os.getcwd()
+        DEFAULT_RECURSION_DEPTH = 0
+        MAX_RECURSTION_DEPTH = 10
+
+        # TODO: Fix this to read from cmd-line
+        recursionDepth = DEFAULT_RECURSION_DEPTH
 
         # Supported formats may be found here: http://pillow.readthedocs.io/en/5.1.x/handbook/image-file-formats.html
         SUPPORTED_EXTENSIONS = ('.jpg', '.jpeg', '.gif', '.png')
@@ -51,35 +59,59 @@ class Format(Command):
         inputs = self.options['<inputs>']
         inputs = DEFAULT_DIR if inputs is None or not inputs else inputs
 
-        #If no output directory is provided, use cwd
+        #If no output directory is provided, or supplied dir is invalid, use cwd
         out_path = self.options['-o']
-        out_path = DEFAULT_DIR if out_path is None else out_path
+        if out_path is None:
+            out_path = DEFAULT_DIR
+        elif not os.path.isdir(out_path):
+            print(
+                'E: Either the directory \'{}\' does not exist, or a file was provided. Using cwd instead'.
+                format(out_path))
+            out_path = DEFAULT_DIR
 
         quality = self.options['-c']
-        quality = DEFAULT_QUALITY if quality is None else int(quality)
+        try:
+            quality = DEFAULT_QUALITY if quality is None else int(quality)
+        except ValueError:
+            print(
+                'E: Supplied quality value \'{}\' is not valid. Quality must be an integer between 0 and 100. Using default value instead'.
+                format(quality))
+            quality = DEFAULT_QUALITY
 
         resolutions = self.options['-r']
-        resolutions = DEFAULT_RESOLUTIONS if resolutions is None or not resolutions else resolutions
-        #NOTE: These resolutions will need to be parsed to remove 'x' char and to convert char's to int's
+        if resolutions is None or not resolutions:
+            resolutions = DEFAULT_RESOLUTIONS
+        else:
+            temp = []
+            for res in resolutions:
+                try:
+                    w, h = res.lower().split('x')
+                    r = (int(w), int(h))
+                    temp.append(r)
+                except ValueError:
+                    print(
+                        'E: Supplied resolution \'{}\' is not valid. Resolutions must be in form \'-r <width>x<height>\''.
+                        format(res))
+            resolutions = temp
+            if not resolutions:
+                print(
+                    'E: All supplied resolution were invalid. Images will not be resized'
+                )
 
+        ##################################
+        # This is the meat of this command
+        ##################################
         for path in inputs:
-            # NOTE: we only require the path here, no reason to declare unused variables and waste memory writes
-            # This is ugly...
-            #   NOTE: check if below works on windows and replace with that
-            # extension = os.path.splittext(path)[1]
-            extension = os.path.splitext(ntpath.split(path)[1])[1]
+            extension = os.path.splitext(path)[1]
 
             if extension == '':
                 # NOTE: output flag -o does not work with this right now
-                # Apply recursive directory call
                 try:
-                    os.chdir(path)
-                    files = os.listdir()
+                    #Gets all files (and only files) from supplied path and subdirectories recursively up to a given depth
+                    files = getFilesRecursively(path, recursionDepth)
+
                     for current_file in files:
-                        # NOTE: I implemented it this way rather than using glob so that way if we chose to include all filetypes that pillow 
-                        # supports we wouldn't need write a call for each filetype. 
-                        # This is subject to change if we agree that glob would be a better implementation.
-                        extension = os.path.splitext(ntpath.split(current_file)[1])[1]
+                        extension = os.path.splitext(current_file)[1]
                         if extension.lower() in SUPPORTED_EXTENSIONS:
                             compress(current_file, out_path, quality)
                 except FileNotFoundError:
@@ -93,9 +125,36 @@ class Format(Command):
             else:
                 print('E: unsupported filetype \'{}\''.format(path))
 
+
 # TODO: possibly keep track of file size before and after and display this with maybe a `--verbose` option
 def compress(path, out_path, quality):
     # NOTE: not sure if we need ntpath, depends on windows
+    # *** Pretty sure we do b/c w/o it, filename would be the full path + filename ***
     filename, extension = os.path.splitext(ntpath.split(path)[1])
     img = Image.open(path)
-    img.save(os.path.join(out_path, filename + "_cmprsd" + extension), optimize=True, quality=quality)
+    img.save(
+        os.path.join(out_path, filename + "_cmprsd" + extension),
+        optimize=True,
+        quality=quality)
+
+
+##############################################################
+# Returns paths to all files from a provided path. Recursively
+# traverses subdirectories up to a given depth, retrieving
+# files from those directories as well.
+##############################################################
+def getFilesRecursively(path, maxdepth):
+    matches = []
+
+    def do_scan(start_dir, output, depth=0):
+        #Using scandir here instead of listdir. They do the same thing but
+        # scandir has fewer stat() calls and so is much faster
+        for entry in os.scandir(start_dir):
+            if entry.is_dir(follow_symlinks=False):
+                if depth < maxdepth:
+                    do_scan(entry.path, output, depth + 1)
+            else:
+                output.append(entry.path)
+
+    do_scan(path, matches, 0)
+    return matches
