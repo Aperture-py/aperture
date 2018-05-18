@@ -1,7 +1,6 @@
 from .command import Command
 from PIL import Image
-import glob, os #EX: glob.glob("*.jpg") will get all files in current directory that are jpegs.
-import ntpath
+import glob, os, ntpath #EX: glob.glob("*.jpg") will get all files in current directory that are jpegs.
 
 """
 NOTES:
@@ -39,13 +38,16 @@ class Format(Command):
     """
     'format' command.
     """
-
     def run(self):
         DEFAULT_RESOLUTIONS = [(200,200), (500,500)] #TODO: Make this do something
         DEFAULT_QUALITY = 75
         DEFAULT_DIR = os.getcwd() #Default directory is current working directory
 
+        # Supported formats may be found here: http://pillow.readthedocs.io/en/5.1.x/handbook/image-file-formats.html
+        SUPPORTED_EXTENSIONS = ('.jpg', '.jpeg', '.gif', '.png')
+
         #If no input files or directories are provided, use cwd
+        #   NOTE: Should we require some sort of explicit information '.' instead of assuming working directory?
         inputs = self.options['<inputs>']
         inputs = DEFAULT_DIR if inputs is None or not inputs else inputs
 
@@ -61,20 +63,39 @@ class Format(Command):
         #NOTE: These resolutions will need to be parsed to remove 'x' char and to convert char's to int's
 
         for path in inputs:
-            head, tail = ntpath.split(path)
-            fl, ext = os.path.splitext(tail)
-            """
-            NOTE:
-            head: fully qualified path before exclusing filename
-            tail: filename plus extension
-            fl: just filename w/o extension
-            ext: just extension
-            """
+            # NOTE: we only require the path here, no reason to declare unused variables and waste memory writes
+            # This is ugly...
+            #   NOTE: check if below works on windows and replace with that
+            # extension = os.path.splittext(path)[1]
+            extension = os.path.splitext(ntpath.split(path)[1])[1]
 
-            if (ext == ''): #directory
-                #TODO: implement this
-                print('DIRECTORIES NOT IMPLEMENTED') #place holder
-            else: #file   
-                img = Image.open(path)
-                img.save(os.path.join(out_path, fl + "_cmprsd" + ext), optimize=True, quality=quality) 
+            if extension == '':
+                # NOTE: output flag -o does not work with this right now
+                # Apply recursive directory call
+                try:
+                    os.chdir(path)
+                    files = os.listdir()
+                    for current_file in files:
+                        # NOTE: I implemented it this way rather than using glob so that way if we chose to include all filetypes that pillow 
+                        # supports we wouldn't need write a call for each filetype. 
+                        # This is subject to change if we agree that glob would be a better implementation.
+                        extension = os.path.splitext(ntpath.split(current_file)[1])[1]
+                        if extension.lower() in SUPPORTED_EXTENSIONS:
+                            compress(current_file, out_path, quality)
+                except FileNotFoundError:
+                    print('E: could not locate directory \'{}\''.format(path))
 
+            elif extension.lower() in SUPPORTED_EXTENSIONS:
+                try:
+                    compress(path, out_path, quality)
+                except FileNotFoundError:
+                    print('E: unable to locate file \'{}\''.format(path))
+            else:
+                print('E: unsupported filetype \'{}\''.format(path))
+
+# TODO: possibly keep track of file size before and after and display this with maybe a `--verbose` option
+def compress(path, out_path, quality):
+    # NOTE: not sure if we need ntpath, depends on windows
+    filename, extension = os.path.splitext(ntpath.split(path)[1])
+    img = Image.open(path)
+    img.save(os.path.join(out_path, filename + "_cmprsd" + extension), optimize=True, quality=quality)
