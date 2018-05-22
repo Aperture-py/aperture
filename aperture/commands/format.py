@@ -1,6 +1,6 @@
 from .command import Command
 from PIL import Image
-import os, ntpath
+import os, ntpath, math
 """
 NOTES:
 
@@ -143,11 +143,12 @@ def compress(path,
     img.save(out_file, optimize=True, quality=quality)
 
     if verbose:
-        initial_size = os.path.getsize(path)
+        old_size = os.path.getsize(path)
         new_size = os.path.getsize(out_file)
-        # TODO: human readable format (b, kb, mb, etc.)
-        print('\t{} ({} bytes) -> {} ({} bytes) [{} bytes saved]'.format(
-            path, initial_size, out_file, new_size, initial_size - new_size))
+        print('\t{} ({}) -> {} ({}) [{} saved]'.format(
+            path, bytes_to_readable(old_size), out_file,
+            bytes_to_readable(new_size),
+            bytes_to_readable(old_size - new_size)))
 
 
 ##############################################################
@@ -187,10 +188,21 @@ def make_necessary_directories(path):
         directories = path.split('/')
 
     for dir in directories:
-        if os.path.isdir(dir):
-            os.chdir(dir)
-        else:
+        if not os.path.isdir(dir):
             os.mkdir(dir)
-            os.chdir(dir)
+        os.chdir(dir)
 
     os.chdir(original_dir)
+
+
+##############################################################
+# From an integer of bytes, convert to human readable format
+# and return a string.
+##############################################################
+def bytes_to_readable(bytes):
+    if bytes < 0:
+        return '<0 bytes'
+    else:
+        mem_sizes = ('bytes', 'KB', 'MB', 'GB', 'TB')
+        level = math.floor(math.log(bytes, 1024))
+        return '{:.2f} {}'.format(bytes / 1024**level, mem_sizes[level])
