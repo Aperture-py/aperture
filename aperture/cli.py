@@ -2,11 +2,10 @@
 
 # DO NOT REMOVE - docopt uses the below docstring to describe the Aperture interface
 # ===========================================================================
-
 """
 
 Usage:
-  aperture format [<inputs>...] [-o <opath>] [-c <qual>] [-r <res>...]
+  aperture format [<inputs>...] [-o <opath>] [-c <qual>] [-r <res>...] [--verbose]
 
 Commands:
   format                        Format images.
@@ -17,7 +16,8 @@ Options:
   -o <opath>                    Output directory for formatted images.
   -r <res>...                   Desired resolutions for output images.
   -c <qual>                     Quality of output images [0-100]. Lower number means lower quality but smaller files. Larger number means higher quality but larger files. [default: 75]
-
+  --verbose                     Verbosity, show what is happening under the hood
+  
 Examples:
   aperture format [<inputs>...] [-o <opath>] [-c <qual>] [-r <res>...]
 

@@ -33,6 +33,16 @@ Can also take in:
 
 """
 
+#TODO: Make this do something
+DEFAULT_RESOLUTIONS = [(200, 200), (500, 500)]
+DEFAULT_QUALITY = 75
+#Default directory is current working directory
+DEFAULT_DIR = os.getcwd()
+DEFAULT_RECURSION_DEPTH = 0
+MAX_RECURSTION_DEPTH = 10
+# Supported formats may be found here: http://pillow.readthedocs.io/en/5.1.x/handbook/image-file-formats.html
+SUPPORTED_EXTENSIONS = ('.jpg', '.jpeg', '.gif', '.png')
+
 
 class Format(Command):
     """
@@ -40,63 +50,18 @@ class Format(Command):
     """
 
     def run(self):
-        #TODO: Make this do something
-        DEFAULT_RESOLUTIONS = [(200, 200), (500, 500)]
-        DEFAULT_QUALITY = 75
-        #Default directory is current working directory
-        DEFAULT_DIR = os.getcwd()
-        DEFAULT_RECURSION_DEPTH = 0
-        MAX_RECURSTION_DEPTH = 10
-
         # TODO: Fix this to read from cmd-line
         recursionDepth = DEFAULT_RECURSION_DEPTH
-
-        # Supported formats may be found here: http://pillow.readthedocs.io/en/5.1.x/handbook/image-file-formats.html
-        SUPPORTED_EXTENSIONS = ('.jpg', '.jpeg', '.gif', '.png')
 
         #If no input files or directories are provided, use cwd
         #   NOTE: Should we require some sort of explicit information '.' instead of assuming working directory?
         inputs = self.options['<inputs>']
         inputs = DEFAULT_DIR if inputs is None or not inputs else inputs
 
-        #If no output directory is provided, or supplied dir is invalid, use cwd
+        verbose = self.options['--verbose']
         out_path = self.options['-o']
-        if out_path is None:
-            out_path = DEFAULT_DIR
-        elif not os.path.isdir(out_path):
-            print(
-                'E: Either the directory \'{}\' does not exist, or a file was provided. Using cwd instead'.
-                format(out_path))
-            out_path = DEFAULT_DIR
-
         quality = self.options['-c']
-        try:
-            quality = DEFAULT_QUALITY if quality is None else int(quality)
-        except ValueError:
-            print(
-                'E: Supplied quality value \'{}\' is not valid. Quality must be an integer between 0 and 100. Using default value instead'.
-                format(quality))
-            quality = DEFAULT_QUALITY
-
         resolutions = self.options['-r']
-        if resolutions is None or not resolutions:
-            resolutions = DEFAULT_RESOLUTIONS
-        else:
-            temp = []
-            for res in resolutions:
-                try:
-                    w, h = res.lower().split('x')
-                    r = (int(w), int(h))
-                    temp.append(r)
-                except ValueError:
-                    print(
-                        'E: Supplied resolution \'{}\' is not valid. Resolutions must be in form \'-r <width>x<height>\''.
-                        format(res))
-            resolutions = temp
-            if not resolutions:
-                print(
-                    'E: All supplied resolution were invalid. Images will not be resized'
-                )
 
         ##################################
         # This is the meat of this command
@@ -105,7 +70,6 @@ class Format(Command):
             extension = os.path.splitext(path)[1]
 
             if extension == '':
-                # NOTE: output flag -o does not work with this right now
                 try:
                     #Gets all files (and only files) from supplied path and subdirectories recursively up to a given depth
                     files = getFilesRecursively(path, recursionDepth)
@@ -113,29 +77,77 @@ class Format(Command):
                     for current_file in files:
                         extension = os.path.splitext(current_file)[1]
                         if extension.lower() in SUPPORTED_EXTENSIONS:
-                            compress(current_file, out_path, quality)
+                            compress(current_file, out_path, resolutions,
+                                     quality, verbose)
                 except FileNotFoundError:
                     print('E: could not locate directory \'{}\''.format(path))
 
             elif extension.lower() in SUPPORTED_EXTENSIONS:
                 try:
-                    compress(path, out_path, quality)
+                    compress(path, out_path, resolutions, quality, verbose)
                 except FileNotFoundError:
                     print('E: unable to locate file \'{}\''.format(path))
             else:
                 print('E: unsupported filetype \'{}\''.format(path))
 
 
-# TODO: possibly keep track of file size before and after and display this with maybe a `--verbose` option
-def compress(path, out_path, quality):
-    # NOTE: not sure if we need ntpath, depends on windows
-    # *** Pretty sure we do b/c w/o it, filename would be the full path + filename ***
-    filename, extension = os.path.splitext(ntpath.split(path)[1])
+##############################################################
+# Compresses an image and saves it within the specified output
+# directory.
+##############################################################
+def compress(path,
+             out_path,
+             resolutions,
+             quality=DEFAULT_QUALITY,
+             verbose=False):
+    #If no output directory is provided, or supplied dir is invalid, use cwd
+    if out_path is None:
+        out_path = DEFAULT_DIR
+    elif not os.path.isdir(out_path):
+        # Attempt to create the output directory
+        # NOTE: haven't tested with directories where user does not have write permissions
+        # (definitely won't work, just dont know what error to catch)
+        make_necessary_directories(out_path)
+
+    try:
+        quality = DEFAULT_QUALITY if quality is None else int(quality)
+    except ValueError:
+        print(
+            'E: Supplied quality value \'{}\' is not valid. Quality must be an integer between 0 and 100. Using default value instead'.
+            format(quality))
+        quality = DEFAULT_QUALITY
+
+    if resolutions is None or not resolutions:
+        resolutions = DEFAULT_RESOLUTIONS
+    else:
+        temp = []
+        for res in resolutions:
+            try:
+                w, h = res.lower().split('x')
+                r = (int(w), int(h))
+                temp.append(r)
+            except ValueError:
+                print(
+                    'E: Supplied resolution \'{}\' is not valid. Resolutions must be in form \'-r <width>x<height>\''.
+                    format(res))
+        resolutions = temp
+        if not resolutions:
+            print(
+                'E: All supplied resolution were invalid. Images will not be resized'
+            )
+
+    # Open, resize/compress and save the image.
     img = Image.open(path)
-    img.save(
-        os.path.join(out_path, filename + "_cmprsd" + extension),
-        optimize=True,
-        quality=quality)
+    filename, extension = os.path.splitext(ntpath.split(path)[1])
+    out_file = os.path.join(out_path, filename + "_cmprsd" + extension)
+    img.save(out_file, optimize=True, quality=quality)
+
+    if verbose:
+        initial_size = os.path.getsize(path)
+        new_size = os.path.getsize(out_file)
+        # TODO: human readable format (b, kb, mb, etc.)
+        print('\t{} ({} bytes) -> {} ({} bytes) [{} bytes saved]'.format(
+            path, initial_size, out_file, new_size, initial_size - new_size))
 
 
 ##############################################################
@@ -158,3 +170,27 @@ def getFilesRecursively(path, maxdepth):
 
     do_scan(path, matches, 0)
     return matches
+
+
+##############################################################
+# Recursively make any necessary directories and
+# subdirectories for output if it does not exist. Return to
+# the original directory afterward.
+##############################################################
+def make_necessary_directories(path):
+    original_dir = os.getcwd()
+
+    # Split the path based off of the OS preferences. Allow windows
+    # users to use forward slash if they would like
+    directories = path.split(os.sep)
+    if len(directories) == 1:
+        directories = path.split('/')
+
+    for dir in directories:
+        if os.path.isdir(dir):
+            os.chdir(dir)
+        else:
+            os.mkdir(dir)
+            os.chdir(dir)
+
+    os.chdir(original_dir)
