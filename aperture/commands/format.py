@@ -1,6 +1,6 @@
 from .command import Command
 from PIL import Image
-import os, ntpath, math
+import os, ntpath, math, sys
 """
 NOTES:
 
@@ -107,7 +107,13 @@ def compress(path,
         # Attempt to create the output directory
         # NOTE: haven't tested with directories where user does not have write permissions
         # (definitely won't work, just dont know what error to catch)
-        make_necessary_directories(out_path)
+
+        try:
+            make_necessary_directories(out_path)
+        except PermissionError:
+            print('E: Unable to create necessary directories for path \'{}\''.
+                  format(out_path))
+            sys.exit(77)
 
     try:
         quality = DEFAULT_QUALITY if quality is None else int(quality)
@@ -181,11 +187,18 @@ def getFilesRecursively(path, maxdepth):
 def make_necessary_directories(path):
     original_dir = os.getcwd()
 
+    path = path.strip()
+
     # Split the path based off of the OS preferences. Allow windows
     # users to use forward slash if they would like
     directories = path.split(os.sep)
     if len(directories) == 1:
         directories = path.split('/')
+
+    # If the user uses '/' at the beginning, go into the root directory
+    if not 'windows' in os.name.lower() and path[0] == '/':
+        os.chdir('/')
+        directories = directories[1:]
 
     for dir in directories:
         if not os.path.isdir(dir):
