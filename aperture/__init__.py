@@ -2,13 +2,15 @@
 
 # DO NOT REMOVE - docopt uses the below docstring to describe the Aperture interface
 # ===========================================================================
+
+# OLD:
+# aperture format [<inputs>...] [-o <opath>] [-c <qual>] [-r <res>...] [--verbose]
+# Commands:
+#   format                        Format images.
 """
 
 Usage:
-  aperture format [<inputs>...] [-o <opath>] [-c <qual>] [-r <res>...] [--verbose]
-
-Commands:
-  format                        Format images.
+  aperture [<inputs>...] [-o <opath>] [-c <qual>] [-r <res>...] [--verbose]
 
 Options:
   -h --help                     Show help.
@@ -19,7 +21,7 @@ Options:
   --verbose                     Verbosity, show what is happening under the hood
   
 Examples:
-  aperture format [<inputs>...] [-o <opath>] [-c <qual>] [-r <res>...]
+  aperture [<inputs>...] [-o <opath>] [-c <qual>] [-r <res>...] [--verbose]
 
 Help:
   For help using this tool...
@@ -34,15 +36,13 @@ from inspect import getmembers, isclass
 __version__ = '0.0.0dev1'
 
 import aperture.commands
-print('apt commands: ', aperture.commands)
 
 
 def main():
     options = docopt(__doc__, version=__version__)
-    print('options: ', options)
+    '''
     for (k, v) in options.items():
         # check if the entered command matches an instance of a command class
-
         if hasattr(aperture.commands, k) and v:
             module = getattr(aperture.commands, k)
             aperture.commands = getmembers(module, isclass)
@@ -52,8 +52,10 @@ def main():
                 if command[0] != 'Command'
             ][0]
             command = command(options)
-            print('Found the command: ', command)
             command.run()  # run the command
+    '''
+    ap = commands.Aperture(options)
+    ap.run()
 
 
 if __name__ == '__main__':

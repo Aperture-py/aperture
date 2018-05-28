@@ -44,7 +44,7 @@ MAX_RECURSTION_DEPTH = 10
 SUPPORTED_EXTENSIONS = ('.jpg', '.jpeg', '.gif', '.png')
 
 
-class Format(Command):
+class Aperture(Command):
     """
     'format' command.
     """
@@ -177,6 +177,14 @@ def getFilesRecursively(path, maxdepth):
 # Recursively make any necessary directories and
 # subdirectories for output if it does not exist. Return to
 # the original directory afterward.
+#
+# (TODO):
+# Need to make it so it doesnt just add all of the provided path
+# to the end of the cwd. If a user supplies an absolute path whose
+# base exists but has appended directories which dont exist, those
+# extra directories should be added to the existing base path rather
+# than just adding the whole thing to the cwd-path
+#
 ##############################################################
 def make_necessary_directories(path):
     original_dir = os.getcwd()

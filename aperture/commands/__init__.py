@@ -4,4 +4,5 @@ executed in Aperture.
 
 To add a new command, add a new import statement: from .<command-name> import *
 """
-from .format import *
+
+from .aperture import *
