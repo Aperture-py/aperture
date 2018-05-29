@@ -40,21 +40,7 @@ import aperture.commands
 
 def main():
     options = docopt(__doc__, version=__version__)
-    '''
-    for (k, v) in options.items():
-        # check if the entered command matches an instance of a command class
-        if hasattr(aperture.commands, k) and v:
-            module = getattr(aperture.commands, k)
-            aperture.commands = getmembers(module, isclass)
-            command = [
-                command[1]
-                for command in aperture.commands
-                if command[0] != 'Command'
-            ][0]
-            command = command(options)
-            command.run()  # run the command
-    '''
-    ap = commands.Aperture(options)
+    ap = aperture.commands.Aperture(options)
     ap.run()
 
 

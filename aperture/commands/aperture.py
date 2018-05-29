@@ -36,12 +36,13 @@ Can also take in:
 #TODO: Make this do something
 DEFAULT_RESOLUTIONS = [(200, 200), (500, 500)]
 DEFAULT_QUALITY = 75
-#Default directory is current working directory
 DEFAULT_DIR = os.getcwd()
-DEFAULT_RECURSION_DEPTH = 0
-MAX_RECURSTION_DEPTH = 10
+
+#Default directory is current working directory
+
 # Supported formats may be found here: http://pillow.readthedocs.io/en/5.1.x/handbook/image-file-formats.html
-SUPPORTED_EXTENSIONS = ('.jpg', '.jpeg', '.gif', '.png')
+from ..util.files import get_file_paths_from_inputs
+from ..util.directories import get_output_path
 
 
 class Aperture(Command):
@@ -50,157 +51,83 @@ class Aperture(Command):
     """
 
     def run(self):
-        # TODO: Fix this to read from cmd-line
-        recursionDepth = DEFAULT_RECURSION_DEPTH
 
-        #If no input files or directories are provided, use cwd
-        #   NOTE: Should we require some sort of explicit information '.' instead of assuming working directory?
+        # Pipeline:
+
+        # 1. Process inputs
+        # - there should be a single function that gets the list of input paths
         inputs = self.options['<inputs>']
-        inputs = DEFAULT_DIR if inputs is None or not inputs else inputs
+        inputs = get_file_paths_from_inputs(inputs)
+        print("Inputs after: ", inputs)
 
-        verbose = self.options['--verbose']
+        # 2. Process options dictionary
+        # a. Process output location
+        # - there should be a single function that returns an output path
         out_path = self.options['-o']
-        quality = self.options['-c']
+        out_path = get_output_path(out_path)
+
+        print("Output path after: ", out_path)
+        # b. Process options that affect the actual images (should be moved to a de-serlization function)
         resolutions = self.options['-r']
+        quality = self.options['-c']
+        verbose = self.options['--verbose']
 
-        ##################################
-        # This is the meat of this command
-        ##################################
-        for path in inputs:
-            extension = os.path.splitext(path)[1]
-
-            if extension == '':
-                try:
-                    #Gets all files (and only files) from supplied path and subdirectories recursively up to a given depth
-                    files = getFilesRecursively(path, recursionDepth)
-
-                    for current_file in files:
-                        extension = os.path.splitext(current_file)[1]
-                        if extension.lower() in SUPPORTED_EXTENSIONS:
-                            compress(current_file, out_path, resolutions,
-                                     quality, verbose)
-                except FileNotFoundError:
-                    print('E: could not locate directory \'{}\''.format(path))
-
-            elif extension.lower() in SUPPORTED_EXTENSIONS:
-                try:
-                    compress(path, out_path, resolutions, quality, verbose)
-                except FileNotFoundError:
-                    print('E: unable to locate file \'{}\''.format(path))
-            else:
-                print('E: unsupported filetype \'{}\''.format(path))
-
-
-##############################################################
-# Compresses an image and saves it within the specified output
-# directory.
-##############################################################
-def compress(path,
-             out_path,
-             resolutions,
-             quality=DEFAULT_QUALITY,
-             verbose=False):
-    #If no output directory is provided, or supplied dir is invalid, use cwd
-    if out_path is None:
-        out_path = DEFAULT_DIR
-    elif not os.path.isdir(out_path):
-        # Attempt to create the output directory
-        # NOTE: haven't tested with directories where user does not have write permissions
-        # (definitely won't work, just dont know what error to catch)
-        make_necessary_directories(out_path)
-
-    try:
-        quality = DEFAULT_QUALITY if quality is None else int(quality)
-    except ValueError:
-        print(
-            'E: Supplied quality value \'{}\' is not valid. Quality must be an integer between 0 and 100. Using default value instead'.
-            format(quality))
-        quality = DEFAULT_QUALITY
-
-    if resolutions is None or not resolutions:
-        resolutions = DEFAULT_RESOLUTIONS
-    else:
-        temp = []
-        for res in resolutions:
-            try:
-                w, h = res.lower().split('x')
-                r = (int(w), int(h))
-                temp.append(r)
-            except ValueError:
-                print(
-                    'E: Supplied resolution \'{}\' is not valid. Resolutions must be in form \'-r <width>x<height>\''.
-                    format(res))
-        resolutions = temp
-        if not resolutions:
+        try:
+            quality = DEFAULT_QUALITY if quality is None else int(quality)
+        except ValueError:
             print(
-                'E: All supplied resolution were invalid. Images will not be resized'
-            )
+                'E: Supplied quality value \'{}\' is not valid. Quality must be an integer between 0 and 100. Using default value instead'.
+                format(quality))
+            quality = DEFAULT_QUALITY
 
-    # Open, resize/compress and save the image.
-    img = Image.open(path)
-    filename, extension = os.path.splitext(ntpath.split(path)[1])
-    out_file = os.path.join(out_path, filename + "_cmprsd" + extension)
+        if resolutions is None or not resolutions:
+            resolutions = DEFAULT_RESOLUTIONS
+        else:
+            temp = []
+            for res in resolutions:
+                try:
+                    w, h = res.lower().split('x')
+                    r = (int(w), int(h))
+                    temp.append(r)
+                except ValueError:
+                    print(
+                        'E: Supplied resolution \'{}\' is not valid. Resolutions must be in form \'-r <width>x<height>\''.
+                        format(res))
+            resolutions = temp
+            if not resolutions:
+                print(
+                    'E: All supplied resolution were invalid. Images will not be resized'
+                )
+
+        # 3. Image processing
+
+        # - apply options to each image
+        for path in inputs:
+            img = Image.open(path)
+            filename, extension = os.path.splitext(ntpath.split(path)[1])
+            out_file = os.path.join(out_path, filename + "_cmprsd" + extension)
+            save_image(img, out_file, quality)
+
+            if verbose:
+                size_comp = get_size_comparisson(path, out_file)
+                old_size = size_comp[0]
+                new_size = size_comp[1]
+                print('\t{} ({}) -> {} ({}) [{} saved]'.format(
+                    path, bytes_to_readable(old_size), out_file,
+                    bytes_to_readable(new_size),
+                    bytes_to_readable(old_size - new_size)))
+
+    # 4. Save
+
+
+def save_image(img, out_file, quality):
     img.save(out_file, optimize=True, quality=quality)
 
-    if verbose:
-        old_size = os.path.getsize(path)
-        new_size = os.path.getsize(out_file)
-        print('\t{} ({}) -> {} ({}) [{} saved]'.format(
-            path, bytes_to_readable(old_size), out_file,
-            bytes_to_readable(new_size),
-            bytes_to_readable(old_size - new_size)))
 
-
-##############################################################
-# Returns paths to all files from a provided path. Recursively
-# traverses subdirectories up to a given depth, retrieving
-# files from those directories as well.
-##############################################################
-def getFilesRecursively(path, maxdepth):
-    matches = []
-
-    def do_scan(start_dir, output, depth=0):
-        #Using scandir here instead of listdir. They do the same thing but
-        # scandir has fewer stat() calls and so is much faster
-        for entry in os.scandir(start_dir):
-            if entry.is_dir(follow_symlinks=False):
-                if depth < maxdepth:
-                    do_scan(entry.path, output, depth + 1)
-            else:
-                output.append(entry.path)
-
-    do_scan(path, matches, 0)
-    return matches
-
-
-##############################################################
-# Recursively make any necessary directories and
-# subdirectories for output if it does not exist. Return to
-# the original directory afterward.
-#
-# (TODO):
-# Need to make it so it doesnt just add all of the provided path
-# to the end of the cwd. If a user supplies an absolute path whose
-# base exists but has appended directories which dont exist, those
-# extra directories should be added to the existing base path rather
-# than just adding the whole thing to the cwd-path
-#
-##############################################################
-def make_necessary_directories(path):
-    original_dir = os.getcwd()
-
-    # Split the path based off of the OS preferences. Allow windows
-    # users to use forward slash if they would like
-    directories = path.split(os.sep)
-    if len(directories) == 1:
-        directories = path.split('/')
-
-    for dir in directories:
-        if not os.path.isdir(dir):
-            os.mkdir(dir)
-        os.chdir(dir)
-
-    os.chdir(original_dir)
+def get_size_comparisson(old_path, new_path):
+    old_size = os.path.getsize(old_path)
+    new_size = os.path.getsize(new_path)
+    return (old_size, new_size)
 
 
 ##############################################################

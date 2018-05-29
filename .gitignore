@@ -1,7 +1,10 @@
 # Directories
 __pycache__
-# ignore an 'img' directory so we can have images for testing during development
-img*
+
 
 # Files
 .DS_Store
+*.jpg
+*.JPEG
+*.png
+*.gif
