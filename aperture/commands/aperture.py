@@ -32,55 +32,89 @@ Can also take in:
     -Each file must come after a '-f' flag and each dir must come after a '-d' flag. 
 
 """
-
-from ..util.files import get_file_paths_from_inputs, get_file_size_comparisson, bytes_to_readable
-from ..util.directories import get_output_path
+import aperture.util.files as utl_f
+import aperture.aperturelib as aptlib
 
 
 class Aperture(Command):
-    """
-    'format' command.
-    """
 
     def run(self):
+        """Runs the 'aperture' command.
+        """
 
-        # Pipeline:
+        options = self.options
 
-        # 1. Process inputs
-        # - there should be a single function that gets the list of input paths
-        inputs = self.options['inputs']
+        inputs = options['inputs']
+        out_path = options['output']
+        quality = options['quality']
+        verbose = options['verbose']
 
-        # 2. Process options dictionary
-        # a. Process output location
-        # - there should be a single function that returns an output path
-        out_path = self.options['output']
-
-        # b. Process options that affect the actual images (should be moved to a de-serlization function)
-        quality = self.options['quality']
-        resolutions = self.options['resolutions']
-        verbose = self.options['verbose']
-
-        # 3. Image processing
-
-        # - apply options to each image
         for path in inputs:
-            img = Image.open(path)
-            filename, extension = os.path.splitext(ntpath.split(path)[1])
-            out_file = os.path.join(out_path, filename + "_cmprsd" + extension)
+            # Send image through the pipeline
+            image = Image.open(path)
+            image_pipeline_results = pipeline_image(image, options)
 
-            save_image(img, out_file, quality)
+            for image in image_pipeline_results:
+                # Get the output path
+                filename, extension = os.path.splitext(ntpath.split(path)[1])
+                out_file = os.path.join(out_path,
+                                        filename + "_cmprsd" + extension)
+                # Save the image
+                save_image(image, out_file, quality)
 
-            if verbose:
-                size_comp = get_file_size_comparisson(path, out_file)
-                old_size = size_comp[0]
-                new_size = size_comp[1]
-                print('\t{} ({}) -> {} ({}) [{} saved]'.format(
-                    path, bytes_to_readable(old_size), out_file,
-                    bytes_to_readable(new_size),
-                    bytes_to_readable(old_size - new_size)))
+                # Print the results of the pipeline
+                if verbose:
+                    print_pipeline_results(path, out_file)
 
-        # 4. Save
+
+def pipeline_image(image, options):
+    """Sends an image through a processing pipeline.
+
+    Applies all (relevant) provided options to a given image.
+
+    Args:
+        image: An instance of a PIL Image.
+        options: Options to apply to the image (i.e. quality and resolutions).
+
+    Returns:
+        A list containing instances of PIL Images. This list will always be length
+        1 if no options exist that require multiple copies to be created for a single
+        image (i.e resolutions).
+    """
+    results = []
+
+    # resolutions = options['resolutions']
+    #     for res in resolutions:
+    #         img_res = aptlib.resize.resize_image(image.copy(), res, true)
+
+    results.append(image)
+    return results
+
+
+def print_pipeline_results(orig_path, new_path):
+    """Prints the results of the pipeline-ing process for a given image.
+
+    Args:
+        orig_path: The path to the original image.
+        new_path: The path to the newly created image.
+    """
+    size_comp = utl_f.get_file_size_comparison(orig_path, new_path)
+    old_size = size_comp[0]
+    new_size = size_comp[1]
+    print('\t{} ({}) -> {} ({}) [{} saved]'.format(
+        orig_path, utl_f.bytes_to_readable(old_size), new_path,
+        utl_f.bytes_to_readable(new_size),
+        utl_f.bytes_to_readable(old_size - new_size)))
 
 
 def save_image(img, out_file, quality):
+    """Saves an instance of a PIL Image to the system.
+
+    This is a wrapper for the PIL Image save function.
+
+    Args:
+        img: An instance of a PIL Image.
+        out_file: Path to save the image to.
+        quality: Quality to apply to the image.
+    """
     img.save(out_file, optimize=True, quality=quality)

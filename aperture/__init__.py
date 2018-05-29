@@ -24,7 +24,7 @@ Help:
 # ===========================================================================
 
 from docopt import docopt
-from aperture.util.options import deserialize_options
+from aperture.options import deserialize_options
 
 # Aperture imports
 # How this version was chosen - https://packaging.python.org/tutorials/distributing-packages/#choosing-a-versioning-scheme

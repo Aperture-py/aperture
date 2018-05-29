@@ -81,7 +81,7 @@ def bytes_to_readable(bytes):
         return '{:.2f} {}'.format(bytes / 1024**level, mem_sizes[level])
 
 
-def get_file_size_comparisson(old_path, new_path):
+def get_file_size_comparison(old_path, new_path):
     old_size = os.path.getsize(old_path)
     new_size = os.path.getsize(new_path)
     return (old_size, new_size)
