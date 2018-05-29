@@ -1,6 +1,7 @@
 import os
+import math
+from aperture.aperturelib import SUPPORTED_EXTENSIONS
 
-SUPPORTED_EXTENSIONS = ('.jpg', '.jpeg', '.gif', '.png')
 DEFAULT_RECURSION_DEPTH = 0
 MAX_RECURSTION_DEPTH = 10
 DEFAULT_DIR = os.getcwd()
@@ -65,3 +66,22 @@ def get_files_recursively(path, maxdepth):
 
     do_scan(path, matches, 0)
     return matches
+
+
+##############################################################
+# From an integer of bytes, convert to human readable format
+# and return a string.
+##############################################################
+def bytes_to_readable(bytes):
+    if bytes < 0:
+        return '<0 bytes'
+    else:
+        mem_sizes = ('bytes', 'KB', 'MB', 'GB', 'TB')
+        level = math.floor(math.log(bytes, 1024))
+        return '{:.2f} {}'.format(bytes / 1024**level, mem_sizes[level])
+
+
+def get_file_size_comparisson(old_path, new_path):
+    old_size = os.path.getsize(old_path)
+    new_size = os.path.getsize(new_path)
+    return (old_size, new_size)
