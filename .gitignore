@@ -8,3 +8,8 @@ __pycache__
 *.JPEG
 *.png
 *.gif
+
+# Build artifacts
+*.egg-info
+build
+dist

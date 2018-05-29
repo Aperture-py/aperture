@@ -5,18 +5,18 @@
 """
 
 Usage:
-  aperture [<inputs>...] [-o <opath>] [-c <qual>] [-r <res>...] [--verbose]
+  aperture [<inputs>...] [-o <opath>] [-c <qual>] [-r <res>] [--verbose]
 
 Options:
   -h --help                     Show help.
   -v --version                  Show version.
   -o <opath>                    Output directory for formatted images.
-  -r <res>...                   Desired resolutions for output images.
+  -r <res>                      Desired resolutions for output images.
   -c <qual>                     Quality of output images [0-100]. Lower number means lower quality but smaller files. Larger number means higher quality but larger files. [default: 75]
   --verbose                     Verbosity, show what is happening under the hood
   
 Examples:
-  aperture [<inputs>...] [-o <opath>] [-c <qual>] [-r <res>...] [--verbose]
+  aperture [<inputs>...] [-o <opath>] [-c <qual>] [-r <res>] [--verbose]
 
 Help:
   For help using this tool...

@@ -37,10 +37,28 @@ def get_quality(quality):
 
 
 def get_resolutions(resolutions):
+    """Extracts the resolutions to use for resizing each image.
+
+    Args:
+        resolution: A string containing image resolutions.
+            The resolution string is expected to have an 'x' used to separate
+            the dimensions of each resolution, with each resolution separated
+            by a space.
+            
+            Example: 
+            "1600x900 1280x1024"
+    Returns:
+        A list of tuples for each resolution, where each tuple is (width, height).
+
+        Example:
+
+        [(1600, 900), (1280, 1024)]
+    """
     if resolutions is None or not resolutions:
         resolutions = DEFAULT_RESOLUTIONS
     else:
         temp = []
+        resolutions = resolutions.split(' ')
         for res in resolutions:
             try:
                 w, h = res.lower().split('x')
@@ -55,5 +73,4 @@ def get_resolutions(resolutions):
             print(
                 'E: All supplied resolution were invalid. Images will not be resized'
             )
-
     return resolutions
