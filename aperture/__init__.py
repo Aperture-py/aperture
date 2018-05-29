@@ -2,11 +2,6 @@
 
 # DO NOT REMOVE - docopt uses the below docstring to describe the Aperture interface
 # ===========================================================================
-
-# OLD:
-# aperture format [<inputs>...] [-o <opath>] [-c <qual>] [-r <res>...] [--verbose]
-# Commands:
-#   format                        Format images.
 """
 
 Usage:

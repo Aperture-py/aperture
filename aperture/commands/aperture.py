@@ -1,6 +1,6 @@
 from .command import Command
 from PIL import Image
-import os, ntpath, math
+import os, ntpath, math, platform, re
 """
 NOTES:
 

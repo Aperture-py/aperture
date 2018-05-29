@@ -25,7 +25,7 @@ def get_file_paths_from_inputs(inputs):
         if extension == '':
             try:
                 #Gets all files (and only files) from supplied path and subdirectories recursively up to a given depth
-                files = getFilesRecursively(path, recursionDepth)
+                files = get_files_recursively(path, recursionDepth)
 
                 for current_file in files:
                     extension = os.path.splitext(current_file)[1]
@@ -50,7 +50,7 @@ def get_file_paths_from_inputs(inputs):
 # traverses subdirectories up to a given depth, retrieving
 # files from those directories as well.
 ##############################################################
-def getFilesRecursively(path, maxdepth):
+def get_files_recursively(path, maxdepth):
     matches = []
 
     def do_scan(start_dir, output, depth=0):
