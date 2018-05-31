@@ -25,6 +25,7 @@ Help:
 
 from docopt import docopt
 from aperture.options import deserialize_options
+import aperture.util.config as conf
 
 # Aperture imports
 # How this version was chosen - https://packaging.python.org/tutorials/distributing-packages/#choosing-a-versioning-scheme
@@ -35,8 +36,9 @@ import aperture.commands
 
 
 def main():
+    config = conf.read_config()
     options = docopt(__doc__, version=VERSION)
-    options_ds = deserialize_options(options)
+    options_ds = deserialize_options(options, config)
     ap = aperture.commands.Aperture(options_ds)
     ap.run()
 

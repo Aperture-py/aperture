@@ -1,19 +1,23 @@
 import aperture.util.files as utl_f
 import aperture.util.directories as utl_d
+import aperture.util.config as utl_c
 
 DEFAULT_RESOLUTIONS = [(200, 200), (500, 500)]
 DEFAULT_QUALITY = 75
 
 
-def deserialize_options(options):
+def deserialize_options(options, config_dict):
 
     deserialized = {}
 
     inputs = options['<inputs>']
-    out_dir = options['-o']
-    quality = options['-c']
-    resolutions = options['-r']
-    verbose = options['--verbose']
+
+    out_dir = utl_c.config_or_provided('output', '-o', config_dict, options)
+    quality = utl_c.config_or_provided('quality', '-c', config_dict, options)
+    resolutions = utl_c.config_or_provided('resolutions', '-r', config_dict,
+                                           options)
+    verbose = utl_c.config_or_provided('verbose', '--verbose', config_dict,
+                                       options)
 
     deserialized['inputs'] = utl_f.get_file_paths_from_inputs(inputs)
     deserialized['output'] = utl_d.get_output_path(out_dir)
