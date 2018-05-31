@@ -29,12 +29,13 @@ from aperture.options import deserialize_options
 # Aperture imports
 # How this version was chosen - https://packaging.python.org/tutorials/distributing-packages/#choosing-a-versioning-scheme
 __version__ = '0.0.0dev1'
+VERSION = __version__
 
 import aperture.commands
 
 
 def main():
-    options = docopt(__doc__, version=__version__)
+    options = docopt(__doc__, version=VERSION)
     options_ds = deserialize_options(options)
     ap = aperture.commands.Aperture(options_ds)
     ap.run()

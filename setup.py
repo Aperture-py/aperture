@@ -8,7 +8,9 @@ with open('README.md') as f:
 with open('LICENSE') as f:
     license = f.read()
 
-from aperture import __version__ as VERSION
+# How this version was chosen - https://packaging.python.org/tutorials/distributing-packages/#choosing-a-versioning-scheme
+__version__ = '0.0.0dev1'
+VERSION = __version__
 
 setup(
     name='aperture',
