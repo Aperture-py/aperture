@@ -4,6 +4,5 @@ is called as a script (via 'python aperture/'); serves
 as a convience wrapper.
 """
 
-from .cli import main
-
-main()
+import aperture
+aperture.main()

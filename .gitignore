@@ -1,5 +1,15 @@
 # Directories
 __pycache__
 
+
 # Files
 .DS_Store
+*.jpg
+*.JPEG
+*.png
+*.gif
+
+# Build artifacts
+*.egg-info
+build
+dist
