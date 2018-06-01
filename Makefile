@@ -5,3 +5,6 @@ clean:
 
 install:
 	python setup.py install
+
+test:
+	python -m unittest discover -s tests/ -p "*_test.py" --verbose
