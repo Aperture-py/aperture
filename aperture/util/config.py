@@ -33,8 +33,13 @@ def read_config():
 
 def validate_data(data):
     ''' Determine whether the config file contains valid syntax, datatypes, ect. '''
+    to_remove = []
     for part in data:
         if not (part in OPTION_TYPES and
                 isinstance(data[part], eval(OPTION_TYPES[part]))):
-            data.pop(part)
+            to_remove.append(part)
+
+    for part in to_remove:
+        data.pop(part)
+
     return data
