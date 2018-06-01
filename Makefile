@@ -5,3 +5,6 @@ clean:
 
 install:
 	python setup.py install
+
+lint:
+	pylint --load-plugins pylint_quotes aperture/

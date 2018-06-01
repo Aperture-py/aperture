@@ -9,6 +9,7 @@ name = "pypi"
 pylint = "*"
 yapf = "*"
 wheel = "*"
+pylint-quotes = "*"
 
 [requires]
 python_version = "3.6"
