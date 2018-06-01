@@ -27,3 +27,7 @@ class FilesTest(util_test_helper.UtilTest):
         """Test for the get_file_size_comparison function.
         """
         return None
+
+
+if __name__ == '__main__':
+    unittest.main()

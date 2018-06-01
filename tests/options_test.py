@@ -32,3 +32,7 @@ class OptionsTest(unittest.TestCase):
         """Test for the save_image function
         """
         return None
+
+
+if __name__ == '__main__':
+    unittest.main()

@@ -15,3 +15,7 @@ class DirectoriesTest(util_test_helper.UtilTest):
         """Test for the make_necessary_directories function.
         """
         return None
+
+
+if __name__ == '__main__':
+    unittest.main()

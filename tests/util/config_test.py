@@ -21,3 +21,7 @@ class ConfigTest(util_test_helper.UtilTest):
         """Test for the validate_data function.
         """
         return None
+
+
+if __name__ == '__main__':
+    unittest.main()
