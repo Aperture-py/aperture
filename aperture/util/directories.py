@@ -1,19 +1,17 @@
 import os, platform, re
 
-DEFAULT_DIR = os.getcwd()
 
+def make_necessary_directories(path):
+    '''Makes necessary directories for a desired directory path.
 
-def get_output_path(out_path):
-    #If no output directory is provided, or supplied dir is invalid, use cwd
-    if out_path is None:
-        out_path = DEFAULT_DIR
-    elif not os.path.isdir(out_path):
-        # Attempt to create the output directory
-        # NOTE: haven't tested with directories where user does not have write permissions
-        # (definitely won't work, just dont know what error to catch)
-        make_necessary_directories(out_path)
+    NOTE: Using this function for now instead of the old version,
+    as the old function would always fail since it would attempt 
+    to create a directory of name '' in root (atleast on MAC).
 
-    return out_path
+    Args:
+        path: A string containing the desired directory path.
+    '''
+    os.makedirs(path)
 
 
 ##############################################################
@@ -21,8 +19,9 @@ def get_output_path(out_path):
 # subdirectories for output if it does not exist. Current
 # working directory will not be affected
 ##############################################################
-def make_necessary_directories(path):
-    #Get the absolute version of whatever path was specified.
+def _old_make_necessary_directories(path):
+
+    # Get the absolute version of whatever path was specified.
     # -If an absolute path was specified, it will be unchanged
     # -If a relative path was specified, it will be appended to the cwd
     abspath = os.path.abspath(path)

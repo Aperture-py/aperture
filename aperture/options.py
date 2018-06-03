@@ -1,80 +1,236 @@
+import os
+
 import aperture.util.files as utl_f
 import aperture.util.directories as utl_d
-import aperture.util.config as utl_c
+import aperture.errors as errors
+import aperture.config_file as cfg_f
+from aperture.aperturelib import SUPPORTED_EXTENSIONS
 
-DEFAULT_RESOLUTIONS = [(200, 200), (500, 500)]
 DEFAULT_QUALITY = 75
+QUALITY_MIN = 1
+QUALITY_MAX = 100
+DEFAULT_DIR = os.getcwd()
 
 
 def deserialize_options(options, config_dict):
+    '''Deserialize and parse each of the provided options.
 
+    Args:
+        options: A dictionary with each command-line option and their values.
+        config_dict: A dictionary with options extracted from a config file.
+
+    Returns:
+        A dictionary with parsed values for each option.
+    '''
     deserialized = {}
 
-    inputs = options['<inputs>']
-
-    out_dir = utl_c.config_or_provided('output', '-o', config_dict, options)
-    quality = utl_c.config_or_provided('quality', '-c', config_dict, options)
-    resolutions = utl_c.config_or_provided('resolutions', '-r', config_dict,
-                                           options)
-    verbose = utl_c.config_or_provided('verbose', '--verbose', config_dict,
+    # Option value precedence:
+    # 1. CMD-line arguments
+    # 2. Config file options
+    inputs = options['<input>']
+    outpath = cfg_f.config_or_provided('outpath', '--outpath', config_dict,
                                        options)
+    quality = cfg_f.config_or_provided('quality', '--quality', config_dict,
+                                       options)
+    resolutions = cfg_f.config_or_provided('resolutions', '--resolutions',
+                                           config_dict, options)
+    verbose = cfg_f.config_or_provided('verbose', '--verbose', config_dict,
+                                       options)
+    depth = cfg_f.config_or_provided('max-depth', '--max-depth', config_dict,
+                                     options)
 
-    deserialized['inputs'] = utl_f.get_file_paths_from_inputs(inputs)
-    deserialized['output'] = utl_d.get_output_path(out_dir)
-    deserialized['quality'] = get_quality(quality)
-    deserialized['resolutions'] = get_resolutions(resolutions)
+    # Parse and extract the values from the options to be sent into aperture.
+    deserialized['max-depth'] = parse_recursion_depth(depth)
+    deserialized['inputs'] = parse_inputs(inputs, deserialized['max-depth'])
+    deserialized['output'] = parse_outpath(outpath)
+    deserialized['quality'] = parse_quality(quality)
+    deserialized['resolutions'] = parse_resolutions(resolutions)
     deserialized['verbose'] = verbose
 
     return deserialized
 
 
-def get_quality(quality):
+def parse_outpath(outpath):
+    '''Parse and extract the output path for the processed images.
+
+    Creates the necessary directories for the output path if it does not exist.
+
+    Args:
+        outpath: A string containing the desired output path.
+
+    Returns:
+        A string containing the final output path.
+
+    Raises:
+        ApertureError: An error occured when creating any necessary directories.
+    '''
+    if outpath is None:
+        outpath = DEFAULT_DIR
+        # replace with log message
+        print('No outpath provided, using the current working directory.')
+    elif outpath == '.':
+        # repetion here so we can have the above warning log
+        outpath = DEFAULT_DIR
+    elif not os.path.isdir(outpath):  # make the directory or directories
+        try:
+            utl_d.make_necessary_directories(outpath)
+        except OSError:  # TODO: Figure out how to check if it's a permission error
+            raise errors.ApertureError(
+                'Failed to create directory \'{}\'.'.format(outpath))
+
+    return outpath
+
+
+def parse_recursion_depth(depth):
+    '''Parse and validate the maximum recursion depth for directory traversal
+
+    Args:
+        depth: An integer containing the maximum recursion depth.
+
+    Returns:
+        An integer containing the parsed maximum recursion depth.
+
+    Raises:
+        ApertureError: An error occured when parsing the maximum recursion depth.
+    '''
+
+    err = 'Supplied depth value \'{}\' is not valid. Depth value must be an integer and be greater than 0.'.format(
+        depth)
+
     try:
-        quality = DEFAULT_QUALITY if quality is None else int(quality)
+        depth = int(depth)
     except ValueError:
-        print(
-            'E: Supplied quality value \'{}\' is not valid. Quality must be an integer between 0 and 100. Using default value instead'.
-            format(quality))
-        quality = DEFAULT_QUALITY
+        raise errors.ApertureError(err)
+
+    if depth < 0:
+        raise errors.ApertureError(err)
+
+    return depth
+
+
+def parse_inputs(inputs, depth):
+    '''Parse and extract the input paths.
+
+    Traverses directories to find all compatible image file paths.
+    A path can also just be an explicit image path, instead of a directory.
+
+    Args:
+        inputs: A list of inputs containing either directories, explicit file paths or both.
+
+    Returns:
+        A list of file paths based on the provided input paths.
+
+    Raises:
+        ApertureError: An error occured when parsing the input paths.
+    '''
+    file_paths = []
+    inputs = [DEFAULT_DIR] if inputs is None or inputs == '.' else inputs
+    for path in inputs:
+        if os.path.isdir(path):
+            try:
+                #Gets all files (and only files) from supplied path and subdirectories recursively up to a given depth
+                files = utl_f.get_files_in_directory_recursive(
+                    path, max_depth=depth)
+            except FileNotFoundError:
+                raise errors.ApertureError(
+                    'Could not locate directory \'{}\''.format(path))
+            for current_file in files:
+                if is_compatible_file(current_file, SUPPORTED_EXTENSIONS):
+                    file_paths.append(current_file)
+                else:
+                    # replace with logger.log('file not an image file', logger.warn)
+                    print('File \'{}\' is not a supported image file.'.format(
+                        current_file))
+
+        elif os.path.isfile(path):
+            if is_compatible_file(path, SUPPORTED_EXTENSIONS):
+                file_paths.append(path)
+            else:
+                # replace with logger.log('file not an image file', logger.warn)
+                print('File \'{}\' is not a supported image file.'.format(
+                    current_file))
+        else:
+            # replace with logger.log('could not locate file', logger.warn)
+            print('Could not locate input \'{}\'.'.format(path))
+
+    if len(file_paths) == 0:
+        raise errors.ApertureError('No valid input files found')
+
+    return file_paths
+
+
+def parse_quality(quality):
+    '''Parses and validate the quality value.
+    
+    Args:
+        quality: A integer containing the quality value
+    
+    Returns:
+        An integer containing the parsed quality value
+    
+    Raises:
+        ApertureError: An error occured parsing the quality value.
+    '''
+    err = 'Supplied quality value \'{}\' is not valid. Quality value must be between 1 and 100'.format(
+        quality)
+
+    try:
+        quality = int(quality)
+    except ValueError:
+        raise errors.ApertureError(err)
+
+    if quality not in range(QUALITY_MIN, QUALITY_MAX + 1):
+        raise errors.ApertureError(err)
 
     return quality
 
 
-def get_resolutions(resolutions):
-    """Extracts the resolutions to use for resizing each image.
+def parse_resolutions(resolutions):
+    '''Parses and extracts the resolutions to use for resizing each image.
 
     Args:
-        resolution: A string containing image resolutions.
+        resolutions: A string containing image resolutions.
             The resolution string is expected to have an 'x' used to separate
-            the dimensions of each resolution, with each resolution separated
-            by a space.
+            the dimensions of each resolution.
+            If multiple resolutions are provided, they must be wrapped in a string
+            with each resolution separated by a space.
             
-            Example: 
+            Examples:
+            800x800
             "1600x900 1280x1024"
+
     Returns:
         A list of tuples for each resolution, where each tuple is (width, height).
 
-        Example:
-
-        [(1600, 900), (1280, 1024)]
-    """
-    if resolutions is None or not resolutions:
-        resolutions = DEFAULT_RESOLUTIONS
-    else:
-        temp = []
+    Raises:
+        ApertureError: An error occurred parsing the resolutions.
+    '''
+    resolutions_parsed = []
+    if resolutions is not None:
         resolutions = resolutions.split(' ')
         for res in resolutions:
             try:
                 w, h = res.lower().split('x')
                 r = (int(w), int(h))
-                temp.append(r)
             except ValueError:
-                print(
-                    'E: Supplied resolution \'{}\' is not valid. Resolutions must be in form \'-r <width>x<height>\''.
+                raise errors.ApertureError(
+                    'Supplied resolution \'{}\' is not valid. Resolutions must be in form \'<width>x<height>\''.
                     format(res))
-        resolutions = temp
-        if not resolutions:
-            print(
-                'E: All supplied resolution were invalid. Images will not be resized'
-            )
-    return resolutions
+            else:
+                resolutions_parsed.append(r)
+
+    return resolutions_parsed
+
+
+# TODO: Ignore hidden files (i.e. .DS_Store, .gitignore)
+def is_compatible_file(path, extensions):
+    '''Determines if a file path is a compatible image file.
+
+    Args:
+        path: A string containing a path to the file.
+        extension: A list of supported extensions to validate the file against.
+    
+    Returns:
+        A boolean indicating whether or not the file is a compatible image file.
+    '''
+    return os.path.splitext(path)[1].lower() in extensions
