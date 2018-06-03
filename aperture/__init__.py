@@ -44,11 +44,13 @@ def main():
     except DocoptExit:
         # Always print entire docopt if you enter just 'aperture', instead of just showing usage patterns.
         print(__doc__)
+        return 0
     else:
         config = conf.read_config()
         options_ds = deserialize_options(options, config)
         ap = aperture.commands.Aperture(options_ds)
         ap.run()
+        return 0
 
 
 def run_main():
