@@ -12,3 +12,6 @@ test:
 lint:
 	pylint --load-plugins pylint_quotes aperture/
 
+document:
+	sphinx-apidoc -o docs/ aperture/ -e -M
+	sphinx-build -b html docs/ docs/_build

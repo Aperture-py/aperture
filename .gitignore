@@ -14,3 +14,7 @@ __pycache__
 *.egg-info
 build
 dist
+
+# Doc Files
+docs/**
+!docs/conf.py
