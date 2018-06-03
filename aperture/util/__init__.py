@@ -1,2 +1,1 @@
-"""Utility package for Aperture-independent system tasks.
-"""
+'''Utility package for Aperture-independent system tasks.'''

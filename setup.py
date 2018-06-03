@@ -10,11 +10,10 @@ with open('LICENSE') as f:
 
 # How this version was chosen - https://packaging.python.org/tutorials/distributing-packages/#choosing-a-versioning-scheme
 __version__ = '0.0.0dev1'
-VERSION = __version__
 
 setup(
     name='aperture',
-    version=VERSION,
+    version=__version__,
     description='An image re-sizing and compression tool',
     long_description=readme,
     url='https://github.com/Aperture-py/aperture',
@@ -22,7 +21,7 @@ setup(
     license=license,
     install_requires=['docopt', 'pillow==5.0.0'],
     entry_points={
-        'console_scripts': ['aperture = aperture:main']
+        'console_scripts': ['aperture = aperture:run_main']
     },  # run the cli main function when aperture is run from the command line (i.e. '$ aperture')
     packages=find_packages(
         exclude=['docs', 'tests*']

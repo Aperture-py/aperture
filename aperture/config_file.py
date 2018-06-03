@@ -1,13 +1,16 @@
 import os, json
 
 OPTION_TYPES = {
-    'output': 'str',
+    'outpath': 'str',
     'quality': 'int',
     'resolutions': 'str',
-    'verbose': 'bool'
+    'verbose': 'bool',
+    'depth': 'int'
 }
 
 
+# BUG: Any defaults specified in docopt will always override a value in the config file
+# even if not provided in the cmd line
 def config_or_provided(option_key, flag, config_dict, options_dict):
     ''' Determine whether an option was provided by the user in the terminal, and if not use the option specified 
         in the config file if it exists. '''

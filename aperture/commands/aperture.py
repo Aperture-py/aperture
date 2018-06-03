@@ -39,7 +39,7 @@ import aperture.aperturelib.resize as apt_resize
 class Aperture(Command):
 
     def run(self):
-        """Runs the 'aperture' command."""
+        '''Runs the 'aperture' command.'''
 
         options = self.options
 
@@ -67,7 +67,7 @@ class Aperture(Command):
 
 
 def pipeline_image(image, options):
-    """Sends an image through a processing pipeline.
+    '''Sends an image through a processing pipeline.
 
     Applies all (relevant) provided options to a given image.
 
@@ -79,7 +79,7 @@ def pipeline_image(image, options):
         A list containing instances of PIL Images. This list will always be length
         1 if no options exist that require multiple copies to be created for a single
         image (i.e resolutions).
-    """
+    '''
     results = []
 
     # Begin pipline
@@ -105,12 +105,12 @@ def pipeline_image(image, options):
 
 
 def print_pipeline_results(orig_path, new_path):
-    """Prints the results of the pipelining process for a given image.
+    '''Prints the results of the pipelining process for a given image.
 
     Args:
         orig_path: The path to the original image.
         new_path: The path to the newly created image.
-    """
+    '''
     size_comp = utl_f.get_file_size_comparison(orig_path, new_path)
     old_size = size_comp[0]
     new_size = size_comp[1]
@@ -121,7 +121,7 @@ def print_pipeline_results(orig_path, new_path):
 
 
 def get_image_out_path(image, orig_path, out_path, options):
-    """Gets the output path for an image.
+    '''Gets the output path for an image.
 
     Extracts an apporpriate name for the image file based on
     the provided options. This file name is then included in
@@ -135,7 +135,7 @@ def get_image_out_path(image, orig_path, out_path, options):
 
     Returns:
         A string containing the complete output path for the image.
-    """
+    '''
     filename, extension = os.path.splitext(ntpath.split(orig_path)[1])
     added_text = ''
 
@@ -154,7 +154,7 @@ def get_image_out_path(image, orig_path, out_path, options):
 
 
 def save_image(image, out_file, quality):
-    """Saves an instance of a PIL Image to the system.
+    '''Saves an instance of a PIL Image to the system.
 
     This is a wrapper for the PIL Image save function.
 
@@ -162,5 +162,5 @@ def save_image(image, out_file, quality):
         img: An instance of a PIL Image.
         out_file: Path to save the image to.
         quality: Quality to apply to the image.
-    """
+    '''
     image.save(out_file, optimize=True, quality=quality)
