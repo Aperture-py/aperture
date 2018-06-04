@@ -13,7 +13,5 @@ lint:
 	pylint --load-plugins pylint_quotes aperture/
 
 document:
-	rm docs/*.rst
-	rm -rf docs/_*
 	sphinx-apidoc -o docs/ aperture/ -e -M -F
-	sphinx-build -b html docs/ docs/_build
+	sphinx-build -a -b html docs/ docs/_build
