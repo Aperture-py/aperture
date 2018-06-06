@@ -66,14 +66,24 @@ def pipeline_image(image, options):
 
     # 2. Apply watermark to each image copy
     wtrmk_path = options['wmark-img']
-    if wtrmk_path is not None:
+    if wtrmk_path:
         if len(results) == 0:
             apt_watermark.watermark_image(image,
                                           wtrmk_path)  #watermark actual image?
         else:
             for img in results:
                 apt_watermark.watermark_image(
-                    img, wtrmk_path)  #watermark actual image?
+                    img, wtrmk_path)  #watermark actual image
+
+    wtrmk_txt = options['wmark-txt']
+    if wtrmk_txt:
+        if len(results) == 0:
+            apt_watermark.watermark_text(image,
+                                         wtrmk_txt)  #watermark actual image?
+        else:
+            for img in results:
+                apt_watermark.watermark_text(img,
+                                             wtrmk_txt)  #watermark actual image
 
     # Fallback: Nothing was done to the image
     if len(results) == 0:

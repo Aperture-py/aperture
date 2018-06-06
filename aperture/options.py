@@ -51,7 +51,8 @@ def deserialize_options(options, config_dict):
     deserialized['resolutions'] = parse_resolutions(resolutions)
     deserialized['verbose'] = verbose
     deserialized['wmark-img'] = parse_watermark_image(watermark_image)
-    deserialized['wmark-txt'] = parse_watermark_text(watermark_text)
+    # Dont really need to parse watermark text because it's either words or it's nothing
+    deserialized['wmark-txt'] = watermark_text
 
     return deserialized
 
@@ -232,7 +233,7 @@ def parse_watermark_image(watermark_path):
     '''Parses and extracts the path to the watermark image to use.
 
     Args:
-        watermark_path: A string to the desired watermark image to use
+        watermark_path: A string to the desired watermark image to use.
 
     Returns:
         The path to the watermark image if the provided image existed and
@@ -254,10 +255,6 @@ def parse_watermark_image(watermark_path):
             raise errors.ApertureError(
                 'File \'{}\' is not a supported image file.'.format(
                     watermark_path))
-
-
-def parse_watermark_text(watermark_text):
-    return None
 
 
 # TODO: Ignore hidden files (i.e. .DS_Store, .gitignore)
