@@ -12,6 +12,8 @@ Options:
   -q <qual>, --quality <qual>       Pass quality level applied to each image. [default: 75]
   -r <res>, --resolutions <res>     Pass set of resolutions applied to each image.
   -m <depth>, --max-depth <depth>   Maximum recursion depth for directory traversal. [default: 0]
+  -w <wmimg>, --wmark-img <wmimg>   Pass location of a watermark image.
+  -t <wmtxt>, --wmark-txt <wmtxt>   Pass text to be added on top of input images.
   -v --verbose                      Output real-time processing statistics.
 
 Examples:
@@ -19,10 +21,12 @@ Examples:
   aperture . -o .
   aperture images/ -o out/ -q 80
   aperture images/ -o out/ -r 400x400
+  aperture images/ -o out/ -r 400x400 -w watermarkdir/
+  aperture images/ -o out/ -r 400x400 -t "Company Name"
   aperture images/ -o out/ -r "800x800 400x400 200x200" -q 60 -v
 
 Help:
-  <inputs>  Must be: .jpg .jpeg .png
+  <inputs>  Can be file(s) or directory. Images must be: .jpg .jpeg .png
 '''
 
 from docopt import docopt, DocoptExit
