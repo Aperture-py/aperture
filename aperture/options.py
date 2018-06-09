@@ -137,6 +137,9 @@ def parse_inputs(inputs, depth):
             except FileNotFoundError:
                 raise errors.ApertureError(
                     'Could not locate directory \'{}\''.format(path))
+            except PermissionError as e:  # Directory has no read access
+                raise errors.ApertureError(
+                    'Permission denied: \'{}\''.format(path))
             for current_file in files:
                 if is_compatible_file(current_file, SUPPORTED_EXTENSIONS):
                     file_paths.append(current_file)
