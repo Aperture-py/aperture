@@ -74,7 +74,10 @@ def parse_outpath(outpath):
     elif not os.path.isdir(outpath):  # make the directory or directories
         try:
             utl_d.make_necessary_directories(outpath)
-        except OSError:  # TODO: Figure out how to check if it's a permission error
+        except PermissionError as e:
+            raise errors.ApertureError(
+                'Permission denied: \'{}\''.format(outpath))
+        except OSError as e:  # catch-all
             raise errors.ApertureError(
                 'Failed to create directory \'{}\'.'.format(outpath))
 
