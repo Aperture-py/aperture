@@ -1,9 +1,8 @@
-from .command import Command
-from PIL import Image
-import os, ntpath, math, platform, re
+import os
+import ntpath
+import aperture.aperturelib as apt
 import aperture.util.files as utl_f
-import aperture.aperturelib.resize as apt_resize
-import aperture.aperturelib.watermark as apt_watermark
+from .command import Command
 
 
 class Aperture(Command):
@@ -18,84 +17,26 @@ class Aperture(Command):
         quality = options['quality']
         verbose = options['verbose']
 
-        for orig_path in inputs:
-            # Send image through the pipeline
-            image = Image.open(orig_path)
-            image_pipeline_results = pipeline_image(image, options)
+        for image_path in inputs:
+            results = apt.format_image(image_path, options)
 
-            for image_result in image_pipeline_results:
+            for image in results:
                 # Get the output file path
-                out_file = get_image_out_path(image_result, orig_path, out_path,
+                out_file = get_image_out_path(image, image_path, out_path,
                                               options)
 
                 # Save the image, apply quality LAST
-                # TODO: Check for a permission deined exception (can happen if
-                # out dir already existed but has no write permissions)
-                save_image(image_result, out_file, quality)
+                apt.save(image, out_file, quality)
 
                 # Print the results of the pipeline
                 if verbose:
-                    print_pipeline_results(orig_path, out_file)
+                    print_verbose(image_path, out_file)
 
 
-def pipeline_image(image, options):
-    '''Sends an image through a processing pipeline.
-
-    Applies all (relevant) provided options to a given image.
-
-    Args:
-        image: An instance of a PIL Image.
-        options: Options to apply to the image (i.e. resolutions).
-
-    Returns:
-        A list containing instances of PIL Images. This list will always be length
-        1 if no options exist that require multiple copies to be created for a single
-        image (i.e resolutions).
-    '''
-    results = []
-
-    # Begin pipline
-
-    # 1. Create image copies for each resolution
-
-    resolutions = options['resolutions']  # List of resolution tuples
-    for res in resolutions:
-        img_rs = apt_resize.resize_image(image, res)  # Resized image
-
-        # Add image to result set. This result set will be pulled from
-        # throughout the pipelining process to perform more processing (watermarking).
-        results.append(img_rs)
-
-    # 2. Apply watermark to each image copy
-    wtrmk_path = options['wmark-img']
-    if wtrmk_path:
-        if len(results) == 0:
-            apt_watermark.watermark_image(image,
-                                          wtrmk_path)  #watermark actual image?
-        else:
-            for img in results:
-                apt_watermark.watermark_image(
-                    img, wtrmk_path)  #watermark actual image
-
-    wtrmk_txt = options['wmark-txt']
-    if wtrmk_txt:
-        if len(results) == 0:
-            apt_watermark.watermark_text(image,
-                                         wtrmk_txt)  #watermark actual image?
-        else:
-            for img in results:
-                apt_watermark.watermark_text(img,
-                                             wtrmk_txt)  #watermark actual image
-
-    # Fallback: Nothing was done to the image
-    if len(results) == 0:
-        results.append(image)
-
-    return results
-
-
-def print_pipeline_results(orig_path, new_path):
-    '''Prints the results of the pipelining process for a given image.
+def print_verbose(orig_path, new_path):
+    '''Prints the verbose output for a given image.
+    
+    Prints the file size comparison of the original an new image.
 
     Args:
         orig_path: The path to the original image.
@@ -141,16 +82,3 @@ def get_image_out_path(image, orig_path, out_path, options):
     out_file = os.path.join(out_path, filename + added_text + extension)
 
     return out_file
-
-
-def save_image(image, out_file, quality):
-    '''Saves an instance of a PIL Image to the system.
-
-    This is a wrapper for the PIL Image save function.
-
-    Args:
-        img: An instance of a PIL Image.
-        out_file: Path to save the image to.
-        quality: Quality to apply to the image.
-    '''
-    image.save(out_file, optimize=True, quality=quality)
