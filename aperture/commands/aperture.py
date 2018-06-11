@@ -1,6 +1,6 @@
 import os
 import ntpath
-import aperture.aperturelib as apt
+import aperturelib as apt
 import aperture.util.files as utl_f
 from .command import Command
 
