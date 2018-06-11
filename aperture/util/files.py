@@ -1,6 +1,6 @@
 import os
 import math
-from aperture.aperturelib import SUPPORTED_EXTENSIONS
+from aperturelib import SUPPORTED_EXTENSIONS
 
 DEFAULT_RECURSION_DEPTH = 0
 MAX_RECURSTION_DEPTH = 10

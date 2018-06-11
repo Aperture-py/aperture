@@ -19,7 +19,7 @@ setup(
     url='https://github.com/Aperture-py/aperture',
     author='salvatorej1@wit.edu, kennedyd3@wit.edu, robbinsa@wit.edu',
     license=license,
-    install_requires=['docopt', 'pillow==5.0.0'],
+    install_requires=['docopt', 'aperturelib'],
     entry_points={
         'console_scripts': ['aperture = aperture:run_main']
     },  # run the cli main function when aperture is run from the command line (i.e. '$ aperture')

@@ -4,7 +4,7 @@ import aperture.util.files as utl_f
 import aperture.util.directories as utl_d
 import aperture.errors as errors
 import aperture.config_file as cfg_f
-from aperture.aperturelib import SUPPORTED_EXTENSIONS
+from aperturelib import SUPPORTED_EXTENSIONS
 
 DEFAULT_QUALITY = 75
 QUALITY_MIN = 1
