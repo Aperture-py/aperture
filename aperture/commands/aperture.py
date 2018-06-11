@@ -59,6 +59,8 @@ class Aperture(Command):
                                               options)
 
                 # Save the image, apply quality LAST
+                # TODO: Check for a permission deined exception (can happen if
+                # out dir already existed but has no write permissions)
                 save_image(image_result, out_file, quality)
 
                 # Print the results of the pipeline
