@@ -5,7 +5,9 @@ OPTION_TYPES = {
     'quality': 'int',
     'resolutions': 'str',
     'verbose': 'bool',
-    'depth': 'int'
+    'max-depth': 'int',
+    'wmark-img': 'str',
+    'wmark-txt': 'str'
 }
 
 

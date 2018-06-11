@@ -38,6 +38,10 @@ def deserialize_options(options, config_dict):
                                        options)
     depth = cfg_f.config_or_provided('max-depth', '--max-depth', config_dict,
                                      options)
+    watermark_image = cfg_f.config_or_provided('wmark-img', '--wmark-img',
+                                               config_dict, options)
+    watermark_text = cfg_f.config_or_provided('wmark-txt', '--wmark-txt',
+                                              config_dict, options)
 
     # Parse and extract the values from the options to be sent into aperture.
     deserialized['max-depth'] = parse_recursion_depth(depth)
@@ -46,6 +50,9 @@ def deserialize_options(options, config_dict):
     deserialized['quality'] = parse_quality(quality)
     deserialized['resolutions'] = parse_resolutions(resolutions)
     deserialized['verbose'] = verbose
+    deserialized['wmark-img'] = parse_watermark_image(watermark_image)
+    # Dont really need to parse watermark text because it's either words or it's nothing
+    deserialized['wmark-txt'] = watermark_text
 
     return deserialized
 
@@ -226,6 +233,34 @@ def parse_resolutions(resolutions):
                 resolutions_parsed.append(r)
 
     return resolutions_parsed
+
+
+def parse_watermark_image(watermark_path):
+    '''Parses and extracts the path to the watermark image to use.
+
+    Args:
+        watermark_path: A string to the desired watermark image to use.
+
+    Returns:
+        The path to the watermark image if the provided image existed and
+        was a valid size and format.
+
+    Raises:
+        ApertureError: An error occurred parsing the watermark image path.
+    '''
+    if not watermark_path:
+        return None
+    elif not os.path.isfile(watermark_path):
+        raise errors.ApertureError(
+            'Supplied path \'{}\' does not exist.'.format(watermark_path))
+    else:
+        if is_compatible_file(watermark_path, SUPPORTED_EXTENSIONS):
+            #watermark_image = Image.open(watermark_path)
+            return watermark_path
+        else:
+            raise errors.ApertureError(
+                'File \'{}\' is not a supported image file.'.format(
+                    watermark_path))
 
 
 # TODO: Ignore hidden files (i.e. .DS_Store, .gitignore)

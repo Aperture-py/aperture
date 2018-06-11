@@ -1,39 +1,9 @@
 from .command import Command
 from PIL import Image
 import os, ntpath, math, platform, re
-"""
-NOTES:
-
-We can manipulate:
-# Directories #
-1. Provide no arg's. Converts all images in current directory and saves in current directory
-2. Provide just 1-? input directories (space delimited). Converts all images in input directories and saves them in current directory
-3. Provide just output directory. Converts all images in current directory and saves them in output directory
-4. Provide in/out directories. Convers all images in input directories and saves them in output directory
-
-# Files #
-1. Provide 1-? input images (space delimited). Convert them and save in current directory
-2. Provide 1-? input images (space delimited) and output directory. Convert input images and save in output directory
-
-*Currently, allows any number of input files and/or directories. 
-    -Files will be formatted individually (DONE)
-    -Directories will be searched for images and all discovered images will be formatted (TO BE DONE) 
-
-Can also take in:
--r : Desired output resolutions (WxH, space delimited, and each one MUST come after a '-r')
-    e.g. "... -r 200x200 -r 400x400 -r 1000x1000 ..."
--c : Whether or not to compress. ('###' can be 0 to 100. Represents desired output quality)
-
-##### Possible formats for cmd-line args #####
-(MY FAV AND HOW IT IS CURRENTLY) aperture format [<inputs>...] [-o <opath>] [-c <qual>] [-r <res>...]
-    -Accepts any number of space delimited input files and/or directories
-(NOT MY FAV BUT STILL GOOD) aperture format [-f <ifiles>...|-d <ipath>] [-o <opath>] [-r <res>...] [-c <qual>]
-    -Accepts and number of files ***OR*** directories based on provided flag.
-    -Each file must come after a '-f' flag and each dir must come after a '-d' flag. 
-
-"""
 import aperture.util.files as utl_f
 import aperture.aperturelib.resize as apt_resize
+import aperture.aperturelib.watermark as apt_watermark
 
 
 class Aperture(Command):
@@ -97,7 +67,25 @@ def pipeline_image(image, options):
         results.append(img_rs)
 
     # 2. Apply watermark to each image copy
-    # TODO: Watermark images from results here.
+    wtrmk_path = options['wmark-img']
+    if wtrmk_path:
+        if len(results) == 0:
+            apt_watermark.watermark_image(image,
+                                          wtrmk_path)  #watermark actual image?
+        else:
+            for img in results:
+                apt_watermark.watermark_image(
+                    img, wtrmk_path)  #watermark actual image
+
+    wtrmk_txt = options['wmark-txt']
+    if wtrmk_txt:
+        if len(results) == 0:
+            apt_watermark.watermark_text(image,
+                                         wtrmk_txt)  #watermark actual image?
+        else:
+            for img in results:
+                apt_watermark.watermark_text(img,
+                                             wtrmk_txt)  #watermark actual image
 
     # Fallback: Nothing was done to the image
     if len(results) == 0:
