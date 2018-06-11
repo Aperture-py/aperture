@@ -2,12 +2,12 @@
 import unittest
 from unittest.mock import patch
 from unittest.mock import MagicMock
-from tests.util import util_test_helper
+from tests.util.util_test_helper import UtilTest
 from aperture.util.directories import make_necessary_directories
 
 
 #pylint: disable=C0111
-class DirectoriesTest(util_test_helper.UtilTest):
+class DirectoriesTest(UtilTest):
 
     def setUp(self):
         self.dir_name = 'test-dir'

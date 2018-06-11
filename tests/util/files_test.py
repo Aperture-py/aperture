@@ -1,44 +1,12 @@
 '''Unit tests for module: aperture.util.files'''
-import os
 from unittest.mock import patch
-from unittest.mock import MagicMock
-import shutil
 import unittest
-import datetime
 from tests.util.util_test_helper import UtilTest, fakeFileEntry
 from aperture.util.files import get_files_in_directory_recursive
 
 
 #pylint: disable=C0111
 class FilesTest(UtilTest):
-
-    # ********
-    # TODO: Learn to use mock instead of actually creating dirs / files
-    # def setUp(self):
-    #     now = datetime.datetime.now()
-    #     self.file_dir = str(now)
-    #     file_dir_nested = self.file_dir + '/sub-dir'
-
-    #     # Make dir with nested dir
-    #     os.makedirs(file_dir_nested)
-
-    #     self.num_files_root = 2
-    #     self.num_files_nested = 3
-
-    #     # Create empty files in top level dir
-    #     for i in range(0, self.num_files_root):
-    #         with open(os.path.join(self.file_dir, 'file-' + str(i)), 'w'):
-    #             pass
-
-    #     # Create empty files in nested dir
-    #     for j in range(0, self.num_files_nested):
-    #         with open(
-    #                 os.path.join(file_dir_nested, 'file-nested-' + str(j)),
-    #                 'w'):
-    #             pass
-
-    # def tearDown(self):
-    #     shutil.rmtree(self.file_dir)  # Remove all nested dirs and files
 
     def setUp(self):
         self.file_dir = 'test-files'
