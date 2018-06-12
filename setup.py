@@ -25,5 +25,5 @@ setup(
     },  # run the cli main function when aperture is run from the command line (i.e. '$ aperture')
     packages=find_packages(
         exclude=['docs', 'tests*']
-    )  # prevent docs and tests from being installed on user's system as actual packages
-)
+    ),  # prevent docs and tests from being installed on user's system as actual packages
+    include_package_data=True)

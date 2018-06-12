@@ -1,4 +1,5 @@
 # Files to include or exclude in the source distribution
 include LICENSE
 include README.md
+include aperture/aperturelib/resources/fonts/*
 exclude .gitignore
