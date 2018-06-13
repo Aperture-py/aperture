@@ -78,15 +78,17 @@ def parse_outpath(outpath):
     elif outpath == '.':
         # repetion here so we can have the above warning log
         outpath = DEFAULT_DIR
-    elif not os.path.isdir(outpath):  # make the directory or directories
-        try:
-            utl_d.make_necessary_directories(outpath)
-        except PermissionError as e:
-            raise errors.ApertureError(
-                'Permission denied: \'{}\''.format(outpath))
-        except OSError as e:  # catch-all
-            raise errors.ApertureError(
-                'Failed to create directory \'{}\'.'.format(outpath))
+    else:
+        outpath = os.path.expanduser(outpath)
+        if not os.path.isdir(outpath):  # make the directory or directories
+            try:
+                utl_d.make_necessary_directories(outpath)
+            except PermissionError as e:
+                raise errors.ApertureError(
+                    'Permission denied: \'{}\''.format(outpath))
+            except OSError as e:  # catch-all
+                raise errors.ApertureError(
+                    'Failed to create directory \'{}\'.'.format(outpath))
 
     return outpath
 
