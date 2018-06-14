@@ -36,11 +36,15 @@ def watermark_image(image, wtrmrk_path, corner=2):
 
     pos = get_pos(corner, image.size, wtrmrk_img.size, padding)
 
+    was_P = image.mode == 'P'
     # Fix PIL palette issue by converting palette images to RGBA
     if image.mode not in ['RGB', 'RGBA']:
         image = image.convert('RGBA')
 
     image.paste(wtrmrk_img.convert('RGBA'), pos, wtrmrk_img.convert('RGBA'))
+
+    if was_P:
+        image = image.convert('P', palette=Image.ADAPTIVE, colors=256)
 
     return image
 
@@ -74,6 +78,7 @@ def watermark_text(image, text, corner=2):
 
     padding = 5
 
+    was_P = image.mode == 'P'
     # Fix PIL palette issue by converting palette images to RGBA
     if image.mode not in ['RGB', 'RGBA']:
         image = image.convert('RGBA')
@@ -126,6 +131,9 @@ def watermark_text(image, text, corner=2):
     # Remove cached font file
     cleanup_resources()
     del img_draw
+
+    if was_P:
+        image = image.convert('P', palette=Image.ADAPTIVE, colors=256)
 
     return image
 
