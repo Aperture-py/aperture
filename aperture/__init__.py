@@ -9,9 +9,9 @@ Usage:
 
 Options:
   -o <opath>, --outpath <opath>     Pass output location for the processed images.
-  -q <qual>, --quality <qual>       Pass quality level applied to each image. [default: 75]
+  -q <qual>, --quality <qual>       Pass quality level applied to each image.        [default = 75]
   -r <res>, --resolutions <res>     Pass set of resolutions applied to each image.
-  -m <depth>, --max-depth <depth>   Maximum recursion depth for directory traversal. [default: 0]
+  -m <depth>, --max-depth <depth>   Maximum recursion depth for directory traversal. [default = 0]
   -w <wmimg>, --wmark-img <wmimg>   Pass location of a watermark image.
   -t <wmtxt>, --wmark-txt <wmtxt>   Pass text to be added on top of input images.
   -v --verbose                      Output real-time processing statistics.

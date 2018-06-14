@@ -28,20 +28,14 @@ def deserialize_options(options, config_dict):
     # 1. CMD-line arguments
     # 2. Config file options
     inputs = options['<input>']
-    outpath = cfg_f.config_or_provided('outpath', '--outpath', config_dict,
-                                       options)
-    quality = cfg_f.config_or_provided('quality', '--quality', config_dict,
-                                       options)
-    resolutions = cfg_f.config_or_provided('resolutions', '--resolutions',
-                                           config_dict, options)
-    verbose = cfg_f.config_or_provided('verbose', '--verbose', config_dict,
-                                       options)
-    depth = cfg_f.config_or_provided('max-depth', '--max-depth', config_dict,
-                                     options)
-    watermark_image = cfg_f.config_or_provided('wmark-img', '--wmark-img',
-                                               config_dict, options)
-    watermark_text = cfg_f.config_or_provided('wmark-txt', '--wmark-txt',
-                                              config_dict, options)
+    outpath = cfg_f.config_or_provided('outpath', config_dict, options)
+    quality = cfg_f.config_or_provided('quality', config_dict, options)
+    resolutions = cfg_f.config_or_provided('resolutions', config_dict, options)
+    verbose = cfg_f.config_or_provided('verbose', config_dict, options)
+    depth = cfg_f.config_or_provided('max-depth', config_dict, options)
+    watermark_image = cfg_f.config_or_provided('wmark-img', config_dict,
+                                               options)
+    watermark_text = cfg_f.config_or_provided('wmark-txt', config_dict, options)
 
     # Parse and extract the values from the options to be sent into aperture.
     deserialized['max-depth'] = parse_recursion_depth(depth)
