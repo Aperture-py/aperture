@@ -37,14 +37,21 @@ def watermark_image(image, wtrmrk_path, corner=2):
     pos = get_pos(corner, image.size, wtrmrk_img.size, padding)
 
     was_P = image.mode == 'P'
+    was_L = image.mode == 'L'
+
     # Fix PIL palette issue by converting palette images to RGBA
     if image.mode not in ['RGB', 'RGBA']:
-        image = image.convert('RGBA')
+        if image.format in ['JPG', 'JPEG']:
+            image = image.convert('RGB')
+        else:
+            image = image.convert('RGBA')
 
     image.paste(wtrmrk_img.convert('RGBA'), pos, wtrmrk_img.convert('RGBA'))
 
     if was_P:
         image = image.convert('P', palette=Image.ADAPTIVE, colors=256)
+    elif was_L:
+        image = image.convert('L')
 
     return image
 
@@ -79,9 +86,14 @@ def watermark_text(image, text, corner=2):
     padding = 5
 
     was_P = image.mode == 'P'
+    was_L = image.mode == 'L'
+
     # Fix PIL palette issue by converting palette images to RGBA
     if image.mode not in ['RGB', 'RGBA']:
-        image = image.convert('RGBA')
+        if image.format in ['JPG', 'JPEG']:
+            image = image.convert('RGB')
+        else:
+            image = image.convert('RGBA')
 
     # Get drawable image
     img_draw = ImageDraw.Draw(image)
@@ -134,6 +146,8 @@ def watermark_text(image, text, corner=2):
 
     if was_P:
         image = image.convert('P', palette=Image.ADAPTIVE, colors=256)
+    elif was_L:
+        image = image.convert('L')
 
     return image
 
