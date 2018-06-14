@@ -78,15 +78,17 @@ def parse_outpath(outpath):
     elif outpath == '.':
         # repetion here so we can have the above warning log
         outpath = DEFAULT_DIR
-    elif not os.path.isdir(outpath):  # make the directory or directories
-        try:
-            utl_d.make_necessary_directories(outpath)
-        except PermissionError as e:
-            raise errors.ApertureError(
-                'Permission denied: \'{}\''.format(outpath))
-        except OSError as e:  # catch-all
-            raise errors.ApertureError(
-                'Failed to create directory \'{}\'.'.format(outpath))
+    else:
+        outpath = os.path.expanduser(outpath)
+        if not os.path.isdir(outpath):  # make the directory or directories
+            try:
+                utl_d.make_necessary_directories(outpath)
+            except PermissionError as e:
+                raise errors.ApertureError(
+                    'Permission denied: \'{}\''.format(outpath))
+            except OSError as e:  # catch-all
+                raise errors.ApertureError(
+                    'Failed to create directory \'{}\'.'.format(outpath))
 
     return outpath
 
@@ -136,6 +138,7 @@ def parse_inputs(inputs, depth):
     file_paths = []
     inputs = [DEFAULT_DIR] if inputs is None or inputs == '.' else inputs
     for path in inputs:
+        path = os.path.expanduser(path)
         if os.path.isdir(path):
             try:
                 #Gets all files (and only files) from supplied path and subdirectories recursively up to a given depth
@@ -250,17 +253,19 @@ def parse_watermark_image(watermark_path):
     '''
     if not watermark_path:
         return None
-    elif not os.path.isfile(watermark_path):
-        raise errors.ApertureError(
-            'Supplied path \'{}\' does not exist.'.format(watermark_path))
     else:
-        if is_compatible_file(watermark_path, SUPPORTED_EXTENSIONS):
-            #watermark_image = Image.open(watermark_path)
-            return watermark_path
-        else:
+        watermark_path = os.path.expanduser(watermark_path)
+        if not os.path.isfile(watermark_path):
             raise errors.ApertureError(
-                'File \'{}\' is not a supported image file.'.format(
-                    watermark_path))
+                'Supplied path \'{}\' does not exist.'.format(watermark_path))
+        else:
+            if is_compatible_file(watermark_path, SUPPORTED_EXTENSIONS):
+                #watermark_image = Image.open(watermark_path)
+                return watermark_path
+            else:
+                raise errors.ApertureError(
+                    'File \'{}\' is not a supported image file.'.format(
+                        watermark_path))
 
 
 # TODO: Ignore hidden files (i.e. .DS_Store, .gitignore)

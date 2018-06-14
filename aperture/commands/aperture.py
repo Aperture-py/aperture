@@ -26,7 +26,8 @@ class Aperture(Command):
                                               options)
 
                 # Save the image, apply quality LAST
-                apt.save(image, out_file, quality)
+                pil_opts = {'quality': quality}
+                apt.save(image, out_file, **pil_opts)
 
                 # Print the results of the pipeline
                 if verbose:
