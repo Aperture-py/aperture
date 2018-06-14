@@ -10,16 +10,22 @@ OPTION_TYPES = {
     'wmark-txt': 'str'
 }
 
+OPTION_DEFAULTS = {'quality': 75, 'max-depth': 0}
+
 
 # BUG: Any defaults specified in docopt will always override a value in the config file
 # even if not provided in the cmd line
-def config_or_provided(option_key, flag, config_dict, options_dict):
+def config_or_provided(option_key, config_dict, options_dict):
     ''' Determine whether an option was provided by the user in the terminal, and if not use the option specified 
         in the config file if it exists. '''
-    if config_dict is not None and option_key in config_dict and (
-        (OPTION_TYPES[option_key] == 'bool' and options_dict[flag] is False) or
+
+    flag = '--' + option_key
+    if ((OPTION_TYPES[option_key] == 'bool' and options_dict[flag] is False) or
             options_dict[flag] is None):
-        return config_dict[option_key]
+        if config_dict is not None and option_key in config_dict:
+            return config_dict[option_key]
+        elif option_key in OPTION_DEFAULTS:
+            return OPTION_DEFAULTS[option_key]
 
     return options_dict[flag]
 
