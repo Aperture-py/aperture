@@ -157,8 +157,7 @@ def parse_inputs(inputs, depth):
                 file_paths.append(path)
             else:
                 # replace with logger.log('file not an image file', logger.warn)
-                print('File \'{}\' is not a supported image file.'.format(
-                    current_file))
+                print('File \'{}\' is not a supported image file.'.format(path))
         else:
             # replace with logger.log('could not locate file', logger.warn)
             print('Could not locate input \'{}\'.'.format(path))
