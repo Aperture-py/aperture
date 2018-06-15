@@ -1,8 +1,8 @@
 '''Tests for the config_file module.'''
+import json
 import unittest
 from unittest.mock import patch
 from unittest.mock import mock_open
-import json
 from aperture.config_file import config_or_provided
 from aperture.config_file import OPTION_DEFAULTS
 from aperture.config_file import validate_data
@@ -129,12 +129,11 @@ class ReadConfigTest(unittest.TestCase):
     def test_invalid_config_file(self, mock_isfile):
         mock_isfile.return_value = True
         # Mock built in 'open'; have it return a string with no JSON structure
+        # it raises an error if the config file contains invalid json
         with patch(
                 'builtins.open',
                 mock_open(read_data=self.cfg_opts_json_invalid)):
-            self.assertRaises(
-                json.decoder.JSONDecodeError, read_config,
-                'it raises an error if the config file contains invalid json')
+            self.assertRaises(json.decoder.JSONDecodeError, read_config)
 
     def test_not_found(self):
         self.assertIsNone(read_config(),
