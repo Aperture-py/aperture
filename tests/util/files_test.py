@@ -1,92 +1,110 @@
-'''Unit tests for module: aperture.util.files'''
-from unittest.mock import patch
+'''Tests for util.files module.'''
+import os
+import tempfile
+import shutil
 import unittest
-from tests.util.util_test_helper import UtilTest, fakeFileEntry
+from unittest.mock import patch
 from aperture.util.files import get_files_in_directory_recursive
 
 
-#pylint: disable=C0111
-class FilesTest(UtilTest):
+def _touch_files(files):
+    for name in files:
+        open(name, 'a').close()
+
+
+class GetFilesRecursivelyTest(unittest.TestCase):
+    '''Tests for the get_files_recursively function.'''
 
     def setUp(self):
-        self.file_dir = 'test-files'
+        self.test_dir = tempfile.mkdtemp()
 
-    @patch('os.scandir')
-    def test_get_files_recursively(self, mock_scandir):
-        '''Test for the get_files_recursively function.
+    def tearDown(self):
+        shutil.rmtree(self.test_dir)
 
-        Tests:
-            1. Get files with depth of 0.
-            2. Get files with depth > 0.
-            3. Get files from directory with no read access.
-        '''
-        # Create fake file entries (mimics an instance of a os.DirEntry class returned from os.scandir)
-        f1 = fakeFileEntry('file-1')
-        f2 = fakeFileEntry('file-2')
-        f3 = fakeFileEntry('file-3')
-        f4 = fakeFileEntry('file-4')
-        f5 = fakeFileEntry('file-5')
+    def _make_test_dir(self, name):
+        fullpath = os.path.normpath(os.path.join(self.test_dir, name))
+        os.makedirs(fullpath)
+        return fullpath
 
-        total_files = 5
+    def test_recursive_depth_0(self):
+        test_files = [
+            os.path.join(self.test_dir, 'file1'),
+            os.path.join(self.test_dir, 'file2'),
+            os.path.join(self.test_dir, 'file3')
+        ]
+        _touch_files(test_files)
+        files = get_files_in_directory_recursive(self.test_dir, 0)
 
-        # Test 1
-        t_1_files = [f1, f2, f3]
-        mock_scandir.side_effect = [t_1_files]  # Mock root dir
+        num_test_files = len(test_files)
+        num_files = len(files)
+        self.assertEqual(num_test_files, num_files,
+                         'it finds all the files in the root directory')
 
-        files = get_files_in_directory_recursive(self.file_dir, 0)
-        # Make sure os.scandir is called with correct path
-        mock_scandir.assert_called_with(self.file_dir)
-        self.assertEqual(
-            len(files), len(t_1_files),
-            'finds all the files in dir when depth is 0')
+    def test_recursive_depth_gt_0(self):
+        test_dir_1 = self._make_test_dir('test1')
+        test_dir_2 = self._make_test_dir('test1/test2')
+        test_dir_3 = self._make_test_dir('test1/test2/test3')
 
-        # End Test 1
+        # +test_dir          depth: 0
+        #  |
+        #  +test1            depth: 1
+        #   | file1
+        #   | file2
+        #   + test2          depth: 2
+        #     | file3
+        #     | file4
+        #     + test3        depth: 3
+        #       | file5
+        #       | file6
 
-        # Create fake directories
-        d1 = fakeFileEntry('dir-1', True)  # Mock dir at root
-        d2 = fakeFileEntry('dir-2', True)  # Mock dir nested below root
-        # Mock the a nested dir structure:
-        #
-        # file
-        # file
-        # dir
-        #   | file
-        #   | file
-        #   | dir
-        #     | file
-
-        # Test 2
-        t_2_files_lvl_1 = [f1, f2, d1]  # Depth = 0
-        t_2_files_lvl_2 = [f3, f4, d2]  # Depth = 1
-        t_2_files_lvl_3 = [f5]  # Depth = 2
-
-        # Mock the return values for each depth
-        mock_scandir.side_effect = [
-            t_2_files_lvl_1, t_2_files_lvl_2, t_2_files_lvl_3
+        files_d_1 = [
+            os.path.join(test_dir_1, 'file1'),
+            os.path.join(test_dir_1, 'file2')
         ]
 
-        files = get_files_in_directory_recursive(None, 2)
-        self.assertEqual(
-            len(files), total_files,
-            'finds all files in root and 2 nested dirs')
+        files_d_2 = [
+            os.path.join(test_dir_2, 'file3'),
+            os.path.join(test_dir_2, 'file4')
+        ]
 
-        # Test 3
+        files_d_3 = [
+            os.path.join(test_dir_3, 'file5'),
+            os.path.join(test_dir_3, 'file6')
+        ]
+        _touch_files(files_d_1)
+        _touch_files(files_d_2)
+        _touch_files(files_d_3)
+
+        files = get_files_in_directory_recursive(self.test_dir, 2)
+
+        num_test_files = len(files_d_1) + len(files_d_2)
+        num_files = len(files)
+
+        self.assertEqual(
+            num_test_files, num_files,
+            'it finds all files through recursive directory traversal up to a depth'
+        )
+
+    @patch('os.scandir')
+    def test_no_permission(self, mock_scandir):
+        # it raises a PermissionError if the directory does not have read access
         mock_scandir.side_effect = PermissionError()
         self.assertRaises(PermissionError, get_files_in_directory_recursive,
-                          self.file_dir)
+                          self.test_dir)
 
+
+class BytesToReadableTest(unittest.TestCase):
     # TODO: Needs tests
     @unittest.skip('need to implement bytes_to_readable test')
-    def test_bytes_to_readable(self):
-        """Test for the bytes_to_readable function.
-        """
+    def test_something(self):
         return None
+
+
+class GetFileSizeComparisonTest(unittest.TestCase):
 
     # TODO: Needs test
     @unittest.skip('need to implement get_file_size_comparison test')
-    def test_get_file_size_comparison(self):
-        """Test for the get_file_size_comparison function.
-        """
+    def test_something(self):
         return None
 
 
