@@ -20,14 +20,16 @@ def config_or_provided(option_key, config_dict, options_dict):
         in the config file if it exists. '''
 
     flag = '--' + option_key
+
+    # wasn't provided in terminal, so we have to check conf file
     if ((OPTION_TYPES[option_key] == 'bool' and options_dict[flag] is False) or
             options_dict[flag] is None):
         if config_dict is not None and option_key in config_dict:
-            return config_dict[option_key]
-        elif option_key in OPTION_DEFAULTS:
+            return config_dict[option_key]  # use config file value
+        elif option_key in OPTION_DEFAULTS:  # wasnt in config file, use default
             return OPTION_DEFAULTS[option_key]
 
-    return options_dict[flag]
+    return options_dict[flag]  # was provided in terminal, use that
 
 
 def read_config():
@@ -42,6 +44,8 @@ def read_config():
         return None
 
 
+# BUG: If you set quality to True in the dict, it doesn't get removed
+# from the dict even though its not an int
 def validate_data(data):
     ''' Determine whether the config file contains valid syntax, datatypes, ect. '''
     to_remove = []
