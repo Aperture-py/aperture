@@ -3,6 +3,7 @@ import ntpath
 import aperturelib as apt
 import aperture.util.files as utl_f
 from .command import Command
+import aperture.util.log as utl_l
 
 
 class Aperture(Command):
@@ -46,7 +47,7 @@ def print_verbose(orig_path, new_path):
     size_comp = utl_f.get_file_size_comparison(orig_path, new_path)
     old_size = size_comp[0]
     new_size = size_comp[1]
-    print('\t{} ({}) -> {} ({}) [{} saved]'.format(
+    utl_l.log('\t{} ({}) -> {} ({}) [{} saved]'.format(
         orig_path, utl_f.bytes_to_readable(old_size), new_path,
         utl_f.bytes_to_readable(new_size),
         utl_f.bytes_to_readable(old_size - new_size)))
