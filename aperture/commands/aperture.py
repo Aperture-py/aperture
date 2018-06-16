@@ -47,10 +47,11 @@ def print_verbose(orig_path, new_path):
     size_comp = utl_f.get_file_size_comparison(orig_path, new_path)
     old_size = size_comp[0]
     new_size = size_comp[1]
-    utl_l.log('\t{} ({}) -> {} ({}) [{} saved]'.format(
-        orig_path, utl_f.bytes_to_readable(old_size), new_path,
-        utl_f.bytes_to_readable(new_size),
-        utl_f.bytes_to_readable(old_size - new_size)))
+    utl_l.log(
+        '\t{} ({}) -> {} ({}) [{} saved]'.format(
+            orig_path, utl_f.bytes_to_readable(old_size), new_path,
+            utl_f.bytes_to_readable(new_size),
+            utl_f.bytes_to_readable(old_size - new_size)), 'info')
 
 
 def get_image_out_path(image, orig_path, out_path, options):

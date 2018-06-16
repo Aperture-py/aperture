@@ -2,6 +2,7 @@ import os
 
 import aperture.util.files as utl_f
 import aperture.util.directories as utl_d
+import aperture.util.log as utl_l
 import aperture.errors as errors
 import aperture.config_file as cfg_f
 from aperturelib import SUPPORTED_EXTENSIONS
@@ -39,8 +40,9 @@ def deserialize_options(options, config_dict):
 
     # Parse and extract the values from the options to be sent into aperture.
     deserialized['max-depth'] = parse_recursion_depth(depth)
-    deserialized['inputs'] = parse_inputs(inputs, deserialized['max-depth'])
-    deserialized['output'] = parse_outpath(outpath)
+    deserialized['inputs'] = parse_inputs(inputs, deserialized['max-depth'],
+                                          verbose)
+    deserialized['output'] = parse_outpath(outpath, verbose)
     deserialized['quality'] = parse_quality(quality)
     deserialized['resolutions'] = parse_resolutions(resolutions)
     deserialized['verbose'] = verbose
@@ -51,13 +53,14 @@ def deserialize_options(options, config_dict):
     return deserialized
 
 
-def parse_outpath(outpath):
+def parse_outpath(outpath, verbose):
     '''Parse and extract the output path for the processed images.
 
     Creates the necessary directories for the output path if it does not exist.
 
     Args:
         outpath: A string containing the desired output path.
+        verbose: A boolean to determine whether to show warnings.
 
     Returns:
         A string containing the final output path.
@@ -67,8 +70,10 @@ def parse_outpath(outpath):
     '''
     if outpath is None:
         outpath = DEFAULT_DIR
-        # replace with log message
-        print('No outpath provided, using the current working directory.')
+        if verbose:
+            utl_l.log(
+                'No outpath provided, using the current working directory.',
+                'info')
     elif outpath == '.':
         # repetion here so we can have the above warning log
         outpath = DEFAULT_DIR
@@ -114,7 +119,7 @@ def parse_recursion_depth(depth):
     return depth
 
 
-def parse_inputs(inputs, depth):
+def parse_inputs(inputs, depth, verbose):
     '''Parse and extract the input paths.
 
     Traverses directories to find all compatible image file paths.
@@ -122,6 +127,7 @@ def parse_inputs(inputs, depth):
 
     Args:
         inputs: A list of inputs containing either directories, explicit file paths or both.
+        verbose: A boolean to determine whether to show warnings.
 
     Returns:
         A list of file paths based on the provided input paths.
@@ -148,19 +154,22 @@ def parse_inputs(inputs, depth):
                 if is_compatible_file(current_file, SUPPORTED_EXTENSIONS):
                     file_paths.append(current_file)
                 else:
-                    # replace with logger.log('file not an image file', logger.warn)
-                    print('File \'{}\' is not a supported image file.'.format(
-                        current_file))
+                    if verbose:
+                        utl_l.log(
+                            'File \'{}\' is not a supported image file.'.format(
+                                current_file), 'warn')
 
         elif os.path.isfile(path):
             if is_compatible_file(path, SUPPORTED_EXTENSIONS):
                 file_paths.append(path)
             else:
-                # replace with logger.log('file not an image file', logger.warn)
-                print('File \'{}\' is not a supported image file.'.format(path))
+                if verbose:
+                    utl_l.log(
+                        'File \'{}\' is not a supported image file.'.format(
+                            path), 'warn')
         else:
-            # replace with logger.log('could not locate file', logger.warn)
-            print('Could not locate input \'{}\'.'.format(path))
+            if verbose:
+                utl_l.log('Could not locate input \'{}\'.'.format(path), 'warn')
 
     if len(file_paths) == 0:
         raise errors.ApertureError('No valid input files found')
