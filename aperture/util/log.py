@@ -29,7 +29,8 @@ def log(message, level='INFO'):
     # Set the color to white after
     # NOTE: if there is some way to detect the default text
     # color this would be nice to apply here instead
-    sys.stdout.write(COLORS['INFO'])
+    if not 'nt' == os.name:
+        sys.stdout.write(COLORS['INFO'])
 
 
 def draw_table(elems):
