@@ -17,11 +17,27 @@ class Aperture(Command):
         out_path = options['output']
         quality = options['quality']
         verbose = options['verbose']
+        resolutions = options['resolutions']
+
+        # Dictionary required for success output
+        sizes_keys = resolutions.copy()
+        sizes = {'orig': []}
+        if sizes_keys == []:
+            sizes_keys.append('new')
+            sizes['new'] = []
+        else:
+            for size in sizes_keys:
+                sizes[size] = []
 
         for image_path in inputs:
             results = apt.format_image(image_path, options)
 
-            for image in results:
+            # Record the original size of the image once
+            sizes['orig'].append(os.path.getsize(image_path))
+
+            for index in range(len(results)):
+                image = results[index]
+
                 # Get the output file path
                 out_file = get_image_out_path(image, image_path, out_path,
                                               options)
@@ -30,9 +46,31 @@ class Aperture(Command):
                 pil_opts = {'quality': quality}
                 apt.save(image, out_file, **pil_opts)
 
+                # For each resolution (if no resolution specified do once with key 'new')
+                # record the resulting file size
+                sizes[sizes_keys[index]].append(os.path.getsize(out_file))
+
                 # Print the results of the pipeline
                 if verbose:
                     print_verbose(image_path, out_file)
+
+        # Sum the image sizes for each element within the sizes
+        for s in sizes:
+            sizes[s] = sum(sizes[s])
+
+        # Determine the savings for each specified resolution
+        # (or once if no resolutions provided)
+        if resolutions == []:
+            utl_l.log('Total savings: {}'.format(
+                utl_f.bytes_to_readable(sizes['orig'] - sizes['new'])), 'succ')
+        else:
+            for i in range(1, len(sizes)):
+                res = resolutions[i - 1]
+                res_str = '{}x{}'.format(res[0], res[1])
+                utl_l.log('Total savings for resolution {}: {}'.format(
+                    res_str,
+                    utl_f.bytes_to_readable(
+                        sizes['orig'] - sizes[list(sizes)[i]])), 'succ')
 
 
 def print_verbose(orig_path, new_path):
@@ -47,11 +85,10 @@ def print_verbose(orig_path, new_path):
     size_comp = utl_f.get_file_size_comparison(orig_path, new_path)
     old_size = size_comp[0]
     new_size = size_comp[1]
-    utl_l.log(
-        '\t{} ({}) -> {} ({}) [{} saved]'.format(
-            orig_path, utl_f.bytes_to_readable(old_size), new_path,
-            utl_f.bytes_to_readable(new_size),
-            utl_f.bytes_to_readable(old_size - new_size)), 'info')
+    utl_l.log('\t{} ({}) -> {} ({}) [{} saved]'.format(
+        orig_path, utl_f.bytes_to_readable(old_size), new_path,
+        utl_f.bytes_to_readable(new_size),
+        utl_f.bytes_to_readable(old_size - new_size)), 'info')
 
 
 def get_image_out_path(image, orig_path, out_path, options):
