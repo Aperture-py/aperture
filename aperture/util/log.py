@@ -31,7 +31,3 @@ def log(message, level='INFO'):
     # color this would be nice to apply here instead
     if not 'nt' == os.name:
         sys.stdout.write(COLORS['INFO'])
-
-
-def draw_table(elems):
-    pass

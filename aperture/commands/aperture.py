@@ -17,23 +17,26 @@ class Aperture(Command):
         out_path = options['output']
         quality = options['quality']
         verbose = options['verbose']
-        resolutions = options['resolutions']
 
         # Dictionary required for success output
-        sizes_keys = resolutions.copy()
-        sizes = {'orig': []}
-        if sizes_keys == []:
-            sizes_keys.append('new')
-            sizes['new'] = []
+        res_keys = options['resolutions'].copy()
+        files = {'orig': []}
+        if res_keys == []:
+            res_keys.append('new')
+            files['new'] = []
         else:
-            for size in sizes_keys:
-                sizes[size] = []
+            for res in res_keys:
+                files[res] = []
+
+        # lambda function to return filename and size as a tuple
+        # where f is a file name
+        filename_size = lambda f: (f, os.path.getsize(f))
 
         for image_path in inputs:
             results = apt.format_image(image_path, options)
 
             # Record the original size of the image once
-            sizes['orig'].append(os.path.getsize(image_path))
+            files['orig'].append(filename_size(image_path))
 
             for index in range(len(results)):
                 image = results[index]
@@ -48,47 +51,81 @@ class Aperture(Command):
 
                 # For each resolution (if no resolution specified do once with key 'new')
                 # record the resulting file size
-                sizes[sizes_keys[index]].append(os.path.getsize(out_file))
+                files[res_keys[index]].append(filename_size(out_file))
 
                 # Print the results of the pipeline
                 if verbose:
-                    print_verbose(image_path, out_file)
+                    utl_l.log('File \'{}\' created.'.format(out_file), 'info')
+
+        # Print savings table if verbose
+        if verbose:
+            display_verbose_table(files)
 
         # Sum the image sizes for each element within the sizes
-        for s in sizes:
-            sizes[s] = sum(sizes[s])
+        sizes = {}
+        for key in files:
+            sizes[key] = sum(list(map(lambda x: x[1], files[key])))
 
         # Determine the savings for each specified resolution
         # (or once if no resolutions provided)
-        if resolutions == []:
-            utl_l.log('Total savings: {}'.format(
-                utl_f.bytes_to_readable(sizes['orig'] - sizes['new'])), 'succ')
+        if res_keys == ['new']:
+            utl_l.log(
+                'Total savings: {}'.format(
+                    utl_f.bytes_to_readable(sizes['orig'] - sizes['new'])),
+                'succ')
         else:
             for i in range(1, len(sizes)):
-                res = resolutions[i - 1]
+                res = res_keys[i - 1]
                 res_str = '{}x{}'.format(res[0], res[1])
-                utl_l.log('Total savings for resolution {}: {}'.format(
-                    res_str,
-                    utl_f.bytes_to_readable(
-                        sizes['orig'] - sizes[list(sizes)[i]])), 'succ')
+                utl_l.log(
+                    'Total savings for resolution {}: {}'.format(
+                        res_str,
+                        utl_f.bytes_to_readable(sizes['orig'] -
+                                                sizes[list(sizes)[i]])), 'succ')
 
 
-def print_verbose(orig_path, new_path):
-    '''Prints the verbose output for a given image.
+def display_verbose_table(files):
+    '''Displays the verbose output table for all processed image.
     
-    Prints the file size comparison of the original an new image.
+    Displays the file size comparison of the original an new image.
 
     Args:
-        orig_path: The path to the original image.
-        new_path: The path to the newly created image.
+        files: A dictionary containing tuples of filenames and filesizes for various resolutions.
     '''
-    size_comp = utl_f.get_file_size_comparison(orig_path, new_path)
-    old_size = size_comp[0]
-    new_size = size_comp[1]
-    utl_l.log('\t{} ({}) -> {} ({}) [{} saved]'.format(
-        orig_path, utl_f.bytes_to_readable(old_size), new_path,
-        utl_f.bytes_to_readable(new_size),
-        utl_f.bytes_to_readable(old_size - new_size)), 'info')
+    widths = (40, 40, 18)
+    print('\n\t{} | {} | {}'.format('original'.ljust(widths[0]), 'result'.ljust(
+        widths[1]), 'savings'.ljust(widths[2])))
+    print('\t{}'.format('-' * (sum(widths) + 6)))
+
+    image_count = len(files['orig'])
+    format_file = lambda f: '{} [{}]'.format(f[0], utl_f.bytes_to_readable(f[1]))
+    extra_line = len(files) > 2
+
+    for image_index in range(image_count):
+        orig_line = True
+        orig = files['orig'][image_index]
+        line = '\t{} | '.format(format_file(orig).ljust(widths[0]))
+
+        for output_index in range(1, len(files)):
+            current = files[list(files)[output_index]][image_index]
+
+            if orig_line:
+                line += '{} | {}'.format(
+                    format_file(current).ljust(widths[1]),
+                    utl_f.bytes_to_readable(orig[1] - current[1]).rjust(10))
+                orig_line = False
+            else:
+                line = '\t{} | {} | {}'.format(
+                    ' ' * widths[0],
+                    format_file(current).ljust(widths[1]),
+                    utl_f.bytes_to_readable(orig[1] - current[1]).rjust(10))
+
+            print(line)
+
+        if extra_line and not image_index == image_count - 1:
+            print('\t{} | {} |'.format(' ' * widths[0], ' ' * widths[1]))
+
+    print('\n')
 
 
 def get_image_out_path(image, orig_path, out_path, options):
