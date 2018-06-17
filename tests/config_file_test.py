@@ -1,13 +1,13 @@
 '''Tests for the config_file module.'''
 import json
 import unittest
-import os
 from unittest.mock import patch
 from unittest.mock import mock_open
 from aperture.config_file import config_or_provided
 from aperture.config_file import OPTION_DEFAULTS
 from aperture.config_file import validate_data
 from aperture.config_file import read_config
+from aperture.config_file import select_config_file
 from aperture.errors import ApertureError
 
 
@@ -103,15 +103,14 @@ class ReadConfigTest(unittest.TestCase):
         self.cfg_opts_json_valid = '{ "quality": 10, "verbose": true }'
         self.cfg_opts_json_invalid = 'asdf'
 
-    @patch('os.path.isfile')
-    def test_valid_config_file(self, mock_isfile):
-        mock_isfile.return_value = True
+    @patch('aperture.config_file.select_config_file')
+    def test_valid_config_file(self, mock_s_cfg):
+        mock_s_cfg.return_value = '.aperture'
         # Mock the built in 'open'; have it return a raw JSON string.
         with patch(
                 'builtins.open',
                 mock_open(read_data=self.cfg_opts_json_valid)) as m:
             test_cfg = read_config()
-            mock_isfile.assert_called_with('.aperture')
             m.assert_called_with('.aperture', 'r')
             self.assertDictEqual(
                 test_cfg, self.cfg_opts,
@@ -128,12 +127,11 @@ class ReadConfigTest(unittest.TestCase):
                 mock_open(read_data=self.cfg_opts_json_invalid)):
             self.assertRaises(ApertureError, read_config)
 
-    def test_not_found(self):
-        if not (os.path.isfile('.aperture') or os.path.isfile('aperture.json')
-                or os.path.isfile('aperturerc')):
-            self.assertIsNone(
-                read_config(),
-                'it returns None if the config file does not exist')
+    @patch('os.path.isfile')
+    def test_not_found(self, mock_isfile):
+        mock_isfile.return_value = False
+        self.assertIsNone(read_config(),
+                          'it returns None if the config file does not exist')
 
 
 if __name__ == '__main__':
