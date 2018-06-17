@@ -40,9 +40,8 @@ def deserialize_options(options, config_dict):
 
     # Parse and extract the values from the options to be sent into aperture.
     deserialized['max-depth'] = parse_recursion_depth(depth)
-    deserialized['inputs'] = parse_inputs(inputs, deserialized['max-depth'],
-                                          verbose)
-    deserialized['output'] = parse_outpath(outpath, verbose)
+    deserialized['inputs'] = parse_inputs(inputs, deserialized['max-depth'])
+    deserialized['output'] = parse_outpath(outpath)
     deserialized['quality'] = parse_quality(quality)
     deserialized['resolutions'] = parse_resolutions(resolutions)
     deserialized['verbose'] = verbose
@@ -53,14 +52,13 @@ def deserialize_options(options, config_dict):
     return deserialized
 
 
-def parse_outpath(outpath, verbose):
+def parse_outpath(outpath):
     '''Parse and extract the output path for the processed images.
 
     Creates the necessary directories for the output path if it does not exist.
 
     Args:
         outpath: A string containing the desired output path.
-        verbose: A boolean to determine whether to show warnings.
 
     Returns:
         A string containing the final output path.
@@ -70,10 +68,8 @@ def parse_outpath(outpath, verbose):
     '''
     if outpath is None:
         outpath = DEFAULT_DIR
-        utl_o.log(
-            'No outpath provided, using the current working directory.',
-            'info',
-            verbose=verbose)
+        utl_o.log('No outpath provided, using the current working directory.',
+                  'info')
     elif outpath == '.':
         # repetion here so we can have the above warning log
         outpath = DEFAULT_DIR
@@ -119,7 +115,7 @@ def parse_recursion_depth(depth):
     return depth
 
 
-def parse_inputs(inputs, depth, verbose):
+def parse_inputs(inputs, depth):
     '''Parse and extract the input paths.
 
     Traverses directories to find all compatible image file paths.
@@ -127,7 +123,6 @@ def parse_inputs(inputs, depth, verbose):
 
     Args:
         inputs: A list of inputs containing either directories, explicit file paths or both.
-        verbose: A boolean to determine whether to show warnings.
 
     Returns:
         A list of file paths based on the provided input paths.
@@ -156,9 +151,7 @@ def parse_inputs(inputs, depth, verbose):
                 else:
                     utl_o.log(
                         'File \'{}\' is not a supported image file.'.format(
-                            current_file),
-                        'warn',
-                        verbose=verbose)
+                            current_file), 'warn')
 
         elif os.path.isfile(path):
             if is_compatible_file(path, SUPPORTED_EXTENSIONS):
@@ -166,13 +159,9 @@ def parse_inputs(inputs, depth, verbose):
             else:
                 utl_o.log(
                     'File \'{}\' is not a supported image file.'.format(path),
-                    'warn',
-                    verbose=verbose)
+                    'warn')
         else:
-            utl_o.log(
-                'Could not locate input \'{}\'.'.format(path),
-                'warn',
-                verbose=verbose)
+            utl_o.log('Could not locate input \'{}\'.'.format(path), 'warn')
 
     if len(file_paths) == 0:
         raise errors.ApertureError('No valid input files found')

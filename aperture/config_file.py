@@ -1,4 +1,6 @@
 import os, json
+import aperture.errors as errors
+import aperture.util.output as utl_o
 
 OPTION_TYPES = {
     'outpath': 'str',
@@ -12,9 +14,9 @@ OPTION_TYPES = {
 
 OPTION_DEFAULTS = {'quality': 75, 'max-depth': 0}
 
+SUPPORTED_CONFIG_FILES = ['.aperture', 'aperture.json', 'aperturerc']
 
-# BUG: Any defaults specified in docopt will always override a value in the config file
-# even if not provided in the cmd line
+
 def config_or_provided(option_key, config_dict, options_dict):
     ''' Determine whether an option was provided by the user in the terminal, and if not use the option specified 
         in the config file if it exists. '''
@@ -35,13 +37,45 @@ def config_or_provided(option_key, config_dict, options_dict):
 def read_config():
     ''' Search for the aperture config file within the current working directory. 
         If it exists, read the json and return the dictionary of validated values. '''
-    if os.path.isfile('.aperture'):
-        with open('.aperture', 'r') as f:
-            data = json.load(f)
+
+    config_file = select_config_file()
+
+    if not config_file == '':
+        utl_o.log('Using config file \'{}\''.format(config_file), 'info')
+
+        try:
+            with open(config_file, 'r') as config_json:
+                data = json.load(config_json)
+        except json.decoder.JSONDecodeError:
+            raise errors.ApertureError(
+                'Invalid json found within the config file.')
+
         validated = validate_data(data)
         return validated
     else:
         return None
+
+
+def select_config_file():
+    ''' Select which config file to read from.
+
+    Returns:
+        A string representing the config file to use.
+    '''
+
+    config_to_use = ''
+    config_file_count = 0
+    for config in SUPPORTED_CONFIG_FILES:
+        if os.path.isfile(config):
+            config_to_use = config
+            config_file_count += 1
+
+    if config_file_count > 1:
+        raise errors.ApertureError(
+            'Multiple config files in current working directory. Only one is permitted.'
+        )
+
+    return config_to_use
 
 
 # BUG: If you set quality to True in the dict, it doesn't get removed
@@ -54,7 +88,16 @@ def validate_data(data):
                 isinstance(data[part], eval(OPTION_TYPES[part]))):
             to_remove.append(part)
 
-    for part in to_remove:
-        data.pop(part)
+    if len(to_remove) != 0:
+        error_msg = 'Unrecognized key(s) within config file:'
+
+        for issue in to_remove:
+            error_msg += ' \'{}\','.format(issue)
+
+        # Remove the final comma from the message
+        error_msg = error_msg[:len(error_msg) - 1]
+        error_msg += '.'
+
+        raise errors.ApertureError(error_msg)
 
     return data
