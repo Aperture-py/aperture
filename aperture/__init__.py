@@ -33,8 +33,8 @@ from docopt import docopt, DocoptExit
 from aperture.options import deserialize_options
 import aperture.config_file as conf
 import aperture.errors as errors
-import aperture.util.log as utl_o
-import sys
+import aperture.util.output as utl_o
+import sys, os
 
 # Aperture imports
 # How this version was chosen - https://packaging.python.org/tutorials/distributing-packages/#choosing-a-versioning-scheme
@@ -51,6 +51,7 @@ def main():
         print(__doc__)
         return 0
     else:
+        utl_o.init_logger('{}{}{}'.format(os.getcwd(), os.sep, '.aperture.log'))
         config = conf.read_config()
         options_ds = deserialize_options(options, config)
         ap = aperture.commands.Aperture(options_ds)

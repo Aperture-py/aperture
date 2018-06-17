@@ -54,8 +54,7 @@ class Aperture(Command):
                 files[res_keys[index]].append(filename_size(out_file))
 
                 # Print the results of the pipeline
-                if verbose:
-                    utl_o.log('File \'{}\' created.'.format(out_file), 'info')
+                utl_o.log('File \'{}\' created.'.format(out_file), 'info')
 
         # Print savings table if verbose
         if verbose:

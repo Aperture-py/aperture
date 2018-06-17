@@ -14,29 +14,49 @@ COLORS = {
 widths = (40, 40, 10)
 
 
-def log(message, level='INFO'):
+def init_logger(filename):
+    '''Initialize the logging.
+
+    Args:
+        filename: A string containing the filename for the logger file.
+    '''
+
+    # NOTE: logger is currently configured with append mode
+    logging.basicConfig(filename=filename, level=logging.INFO)
+
+
+def log(message, level, verbose=False):
     '''Print out a message to the console.
 
     Args:
         message: A string containing the message to be printed.
         level: A string containing the level of the message.
+        verbose: A boolean on whether the output should be printed to stdout.
 
     '''
 
     level = level.upper()
-    output = ''
 
-    # If the os is windows ignore coloring
-    if not os.name == 'nt':
-        output += COLORS[level]
+    if verbose or level == 'ERROR' or level == 'SUCC':
+        output = ''
 
-    print(output + message)
+        # If the os is windows ignore coloring
+        if not os.name == 'nt':
+            output += COLORS[level]
 
-    # Set the color to white after
-    # NOTE: if there is some way to detect the default text
-    # color this would be nice to apply here instead
-    if not os.name == 'nt':
-        sys.stdout.write(COLORS['INFO'])
+        print(output + message)
+
+        # Set the color to white after
+        if not os.name == 'nt':
+            sys.stdout.write(COLORS['INFO'])
+
+    logger = logging.getLogger()
+    if level == 'INFO' or level == 'SUCC':
+        logger.info(message)
+    elif level == 'WARN':
+        logger.warning(message)
+    elif level == 'ERROR':
+        logger.error(message)
 
 
 def display_verbose_table(files):
@@ -83,6 +103,14 @@ def display_verbose_table(files):
 
 
 def get_table_filename(file_tuple, color_ext=False):
+    '''Creates a filename entry for the vebose output table with truncation if necessary.
+
+    Args:
+        file_tuple: A tuple containing the file's name and size.
+        color_ext: A boolean whether the file's extension should be colored.
+
+    '''
+
     filename = os.path.split(file_tuple[0])[1]
     filesize = '[{}]'.format(utl_f.bytes_to_readable(file_tuple[1]))
 
