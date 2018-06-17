@@ -2,7 +2,7 @@ import os
 
 import aperture.util.files as utl_f
 import aperture.util.directories as utl_d
-import aperture.util.log as utl_l
+import aperture.util.log as utl_o
 import aperture.errors as errors
 import aperture.config_file as cfg_f
 from aperturelib import SUPPORTED_EXTENSIONS
@@ -71,7 +71,7 @@ def parse_outpath(outpath, verbose):
     if outpath is None:
         outpath = DEFAULT_DIR
         if verbose:
-            utl_l.log(
+            utl_o.log(
                 'No outpath provided, using the current working directory.',
                 'info')
     elif outpath == '.':
@@ -155,7 +155,7 @@ def parse_inputs(inputs, depth, verbose):
                     file_paths.append(current_file)
                 else:
                     if verbose:
-                        utl_l.log(
+                        utl_o.log(
                             'File \'{}\' is not a supported image file.'.format(
                                 current_file), 'warn')
 
@@ -164,12 +164,12 @@ def parse_inputs(inputs, depth, verbose):
                 file_paths.append(path)
             else:
                 if verbose:
-                    utl_l.log(
+                    utl_o.log(
                         'File \'{}\' is not a supported image file.'.format(
                             path), 'warn')
         else:
             if verbose:
-                utl_l.log('Could not locate input \'{}\'.'.format(path), 'warn')
+                utl_o.log('Could not locate input \'{}\'.'.format(path), 'warn')
 
     if len(file_paths) == 0:
         raise errors.ApertureError('No valid input files found')

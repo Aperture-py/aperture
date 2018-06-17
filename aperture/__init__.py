@@ -33,7 +33,7 @@ from docopt import docopt, DocoptExit
 from aperture.options import deserialize_options
 import aperture.config_file as conf
 import aperture.errors as errors
-import aperture.util.log as utl_l
+import aperture.util.log as utl_o
 import sys
 
 # Aperture imports
@@ -63,7 +63,7 @@ def run_main():
     try:
         sys.exit(main())
     except errors.ApertureError as e:
-        utl_l.log('aperture: {}'.format(str(e)), 'error')
+        utl_o.log('aperture: {}'.format(str(e)), 'error')
         sys.exit(1)
 
 

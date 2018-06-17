@@ -3,7 +3,7 @@ import ntpath
 import aperturelib as apt
 import aperture.util.files as utl_f
 from .command import Command
-import aperture.util.log as utl_l
+import aperture.util.output as utl_o
 
 
 class Aperture(Command):
@@ -55,11 +55,11 @@ class Aperture(Command):
 
                 # Print the results of the pipeline
                 if verbose:
-                    utl_l.log('File \'{}\' created.'.format(out_file), 'info')
+                    utl_o.log('File \'{}\' created.'.format(out_file), 'info')
 
         # Print savings table if verbose
         if verbose:
-            display_verbose_table(files)
+            utl_o.display_verbose_table(files)
 
         # Sum the image sizes for each element within the sizes
         sizes = {}
@@ -69,63 +69,16 @@ class Aperture(Command):
         # Determine the savings for each specified resolution
         # (or once if no resolutions provided)
         if res_keys == ['new']:
-            utl_l.log(
-                'Total savings: {}'.format(
-                    utl_f.bytes_to_readable(sizes['orig'] - sizes['new'])),
-                'succ')
+            utl_o.log('Total savings: {}'.format(
+                utl_f.bytes_to_readable(sizes['orig'] - sizes['new'])), 'succ')
         else:
             for i in range(1, len(sizes)):
                 res = res_keys[i - 1]
                 res_str = '{}x{}'.format(res[0], res[1])
-                utl_l.log(
-                    'Total savings for resolution {}: {}'.format(
-                        res_str,
-                        utl_f.bytes_to_readable(sizes['orig'] -
-                                                sizes[list(sizes)[i]])), 'succ')
-
-
-def display_verbose_table(files):
-    '''Displays the verbose output table for all processed image.
-    
-    Displays the file size comparison of the original an new image.
-
-    Args:
-        files: A dictionary containing tuples of filenames and filesizes for various resolutions.
-    '''
-    widths = (40, 40, 18)
-    print('\n\t{} | {} | {}'.format('original'.ljust(widths[0]), 'result'.ljust(
-        widths[1]), 'savings'.ljust(widths[2])))
-    print('\t{}'.format('-' * (sum(widths) + 6)))
-
-    image_count = len(files['orig'])
-    format_file = lambda f: '{} [{}]'.format(f[0], utl_f.bytes_to_readable(f[1]))
-    extra_line = len(files) > 2
-
-    for image_index in range(image_count):
-        orig_line = True
-        orig = files['orig'][image_index]
-        line = '\t{} | '.format(format_file(orig).ljust(widths[0]))
-
-        for output_index in range(1, len(files)):
-            current = files[list(files)[output_index]][image_index]
-
-            if orig_line:
-                line += '{} | {}'.format(
-                    format_file(current).ljust(widths[1]),
-                    utl_f.bytes_to_readable(orig[1] - current[1]).rjust(10))
-                orig_line = False
-            else:
-                line = '\t{} | {} | {}'.format(
-                    ' ' * widths[0],
-                    format_file(current).ljust(widths[1]),
-                    utl_f.bytes_to_readable(orig[1] - current[1]).rjust(10))
-
-            print(line)
-
-        if extra_line and not image_index == image_count - 1:
-            print('\t{} | {} |'.format(' ' * widths[0], ' ' * widths[1]))
-
-    print('\n')
+                utl_o.log('Total savings for resolution {}: {}'.format(
+                    res_str,
+                    utl_f.bytes_to_readable(
+                        sizes['orig'] - sizes[list(sizes)[i]])), 'succ')
 
 
 def get_image_out_path(image, orig_path, out_path, options):
