@@ -3,6 +3,8 @@ import ntpath
 import aperturelib as apt
 import aperture.util.files as utl_f
 from .command import Command
+import aperture.util.output as utl_o
+from aperture.util.output import apt_logger as logger
 
 
 class Aperture(Command):
@@ -17,10 +19,29 @@ class Aperture(Command):
         quality = options['quality']
         verbose = options['verbose']
 
+        # Dictionary required for success output
+        res_keys = options['resolutions'].copy()
+        files = {'orig': []}
+        if res_keys == []:
+            res_keys.append('new')
+            files['new'] = []
+        else:
+            for res in res_keys:
+                files[res] = []
+
+        # lambda function to return filename and size as a tuple
+        # where f is a file name
+        filename_size = lambda f: (f, os.path.getsize(f))
+
         for image_path in inputs:
             results = apt.format_image(image_path, options)
 
-            for image in results:
+            # Record the original size of the image once
+            files['orig'].append(filename_size(image_path))
+
+            for index in range(len(results)):
+                image = results[index]
+
                 # Get the output file path
                 out_file = get_image_out_path(image, image_path, out_path,
                                               options)
@@ -29,27 +50,46 @@ class Aperture(Command):
                 pil_opts = {'quality': quality}
                 apt.save(image, out_file, **pil_opts)
 
+                # For each resolution (if no resolution specified do once with key 'new')
+                # record the resulting file size
+                files[res_keys[index]].append(filename_size(out_file))
+
                 # Print the results of the pipeline
-                if verbose:
-                    print_verbose(image_path, out_file)
+                logger.log('File \'{}\' created.'.format(out_file), 'info')
 
+        # Print savings table if verbose
+        if logger.verbose:
+            utl_o.display_verbose_table(files)
 
-def print_verbose(orig_path, new_path):
-    '''Prints the verbose output for a given image.
-    
-    Prints the file size comparison of the original an new image.
+        # Sum the image sizes for each element within the sizes
+        sizes = {}
+        for key in files:
+            sizes[key] = sum(list(map(lambda x: x[1], files[key])))
 
-    Args:
-        orig_path: The path to the original image.
-        new_path: The path to the newly created image.
-    '''
-    size_comp = utl_f.get_file_size_comparison(orig_path, new_path)
-    old_size = size_comp[0]
-    new_size = size_comp[1]
-    print('\t{} ({}) -> {} ({}) [{} saved]'.format(
-        orig_path, utl_f.bytes_to_readable(old_size), new_path,
-        utl_f.bytes_to_readable(new_size),
-        utl_f.bytes_to_readable(old_size - new_size)))
+        # Determine the savings for each specified resolution
+        # (or once if no resolutions provided)
+
+        image_count_str = 'Input images: {}\nOutput images: {}'
+        if res_keys == ['new']:
+            logger.log(
+                image_count_str.format(len(inputs), len(inputs)), 'extrainfo')
+            logger.log(
+                'Total savings: {}'.format(
+                    utl_f.bytes_to_readable(sizes['orig'] - sizes['new'])),
+                'succ')
+        else:
+            logger.log(
+                image_count_str.format(
+                    len(inputs),
+                    len(inputs) * (len(sizes) - 1)), 'extrainfo')
+            for i in range(1, len(sizes)):
+                res = res_keys[i - 1]
+                res_str = '{}x{}'.format(res[0], res[1])
+                logger.log(
+                    'Total savings for resolution {}: {}'.format(
+                        res_str,
+                        utl_f.bytes_to_readable(sizes['orig'] -
+                                                sizes[list(sizes)[i]])), 'succ')
 
 
 def get_image_out_path(image, orig_path, out_path, options):

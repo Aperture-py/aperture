@@ -4,6 +4,7 @@ import aperture.util.files as utl_f
 import aperture.util.directories as utl_d
 import aperture.errors as errors
 import aperture.config_file as cfg_f
+from aperture.util.output import apt_logger as logger
 from aperturelib import SUPPORTED_EXTENSIONS
 
 DEFAULT_QUALITY = 75
@@ -38,12 +39,13 @@ def deserialize_options(options, config_dict):
     watermark_text = cfg_f.config_or_provided('wmark-txt', config_dict, options)
 
     # Parse and extract the values from the options to be sent into aperture.
+    deserialized['verbose'] = verbose
+    logger.verbose = verbose
     deserialized['max-depth'] = parse_recursion_depth(depth)
     deserialized['inputs'] = parse_inputs(inputs, deserialized['max-depth'])
     deserialized['output'] = parse_outpath(outpath)
     deserialized['quality'] = parse_quality(quality)
     deserialized['resolutions'] = parse_resolutions(resolutions)
-    deserialized['verbose'] = verbose
     deserialized['wmark-img'] = parse_watermark_image(watermark_image)
     # Dont really need to parse watermark text because it's either words or it's nothing
     deserialized['wmark-txt'] = watermark_text
@@ -67,8 +69,8 @@ def parse_outpath(outpath):
     '''
     if outpath is None:
         outpath = DEFAULT_DIR
-        # replace with log message
-        print('No outpath provided, using the current working directory.')
+        logger.log('No outpath provided, using the current working directory.',
+                   'info')
     elif outpath == '.':
         # repetion here so we can have the above warning log
         outpath = DEFAULT_DIR
@@ -148,19 +150,19 @@ def parse_inputs(inputs, depth):
                 if is_compatible_file(current_file, SUPPORTED_EXTENSIONS):
                     file_paths.append(current_file)
                 else:
-                    # replace with logger.log('file not an image file', logger.warn)
-                    print('File \'{}\' is not a supported image file.'.format(
-                        current_file))
+                    logger.log(
+                        'File \'{}\' is not a supported image file.'.format(
+                            current_file), 'warn')
 
         elif os.path.isfile(path):
             if is_compatible_file(path, SUPPORTED_EXTENSIONS):
                 file_paths.append(path)
             else:
-                # replace with logger.log('file not an image file', logger.warn)
-                print('File \'{}\' is not a supported image file.'.format(path))
+                logger.log(
+                    'File \'{}\' is not a supported image file.'.format(path),
+                    'warn')
         else:
-            # replace with logger.log('could not locate file', logger.warn)
-            print('Could not locate input \'{}\'.'.format(path))
+            logger.log('Could not locate input \'{}\'.'.format(path), 'warn')
 
     if len(file_paths) == 0:
         raise errors.ApertureError('No valid input files found')
