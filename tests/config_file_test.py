@@ -1,12 +1,14 @@
 '''Tests for the config_file module.'''
 import json
 import unittest
+import os
 from unittest.mock import patch
 from unittest.mock import mock_open
 from aperture.config_file import config_or_provided
 from aperture.config_file import OPTION_DEFAULTS
 from aperture.config_file import validate_data
 from aperture.config_file import read_config
+from aperture.errors import ApertureError
 
 
 class ConfigOrProvidedTest(unittest.TestCase):
@@ -75,25 +77,16 @@ class ValidateDataTest(unittest.TestCase):
                              'it returns an empty dict if no options exist')
 
     def test_optionkey_invalid(self):
-        num_opts = len(self.cfg_opts)
         bad_key = 'asdfqwer'
         good_key_val = self.cfg_opts[self.cfg_key]
         del self.cfg_opts[self.cfg_key]
         self.cfg_opts[bad_key] = good_key_val
-
-        test_num_opts = len(validate_data(self.cfg_opts))
-        self.assertEqual(test_num_opts, num_opts - 1,
-                         'it removes an option if the key is incorrect')
+        self.assertRaises(ApertureError)
 
     def test_datatype_invalid(self):
-        num_opts = len(self.cfg_opts)
-        bad_value = True
+        bad_value = 'ok'
         self.cfg_opts[self.cfg_key] = bad_value
-
-        test_num_opts = len(validate_data(self.cfg_opts))
-        self.assertEqual(
-            test_num_opts, num_opts - 1,
-            'it removes an option if the data type for the key is incorrect')
+        self.assertRaises(ApertureError)
 
     def test_all_valid(self):
         test_dict = validate_data(self.cfg_opts)
@@ -133,11 +126,14 @@ class ReadConfigTest(unittest.TestCase):
         with patch(
                 'builtins.open',
                 mock_open(read_data=self.cfg_opts_json_invalid)):
-            self.assertRaises(json.decoder.JSONDecodeError, read_config)
+            self.assertRaises(ApertureError, read_config)
 
     def test_not_found(self):
-        self.assertIsNone(read_config(),
-                          'it returns None if the config file does not exist')
+        if not (os.path.isfile('.aperture') or os.path.isfile('aperture.json')
+                or os.path.isfile('aperturerc')):
+            self.assertIsNone(
+                read_config(),
+                'it returns None if the config file does not exist')
 
 
 if __name__ == '__main__':

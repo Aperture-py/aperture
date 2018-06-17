@@ -78,8 +78,6 @@ def select_config_file():
     return config_to_use
 
 
-# BUG: If you set quality to True in the dict, it doesn't get removed
-# from the dict even though its not an int
 def validate_data(data):
     ''' Determine whether the config file contains valid syntax, datatypes, ect. '''
     to_remove = []
