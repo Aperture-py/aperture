@@ -4,6 +4,7 @@ import aperturelib as apt
 import aperture.util.files as utl_f
 from .command import Command
 import aperture.util.output as utl_o
+from aperture.util.output import apt_logger as logger
 
 
 class Aperture(Command):
@@ -54,13 +55,10 @@ class Aperture(Command):
                 files[res_keys[index]].append(filename_size(out_file))
 
                 # Print the results of the pipeline
-                utl_o.log(
-                    'File \'{}\' created.'.format(out_file),
-                    'info',
-                    verbose=verbose)
+                logger.log('File \'{}\' created.'.format(out_file), 'info')
 
         # Print savings table if verbose
-        if verbose:
+        if logger.verbose:
             utl_o.display_verbose_table(files)
 
         # Sum the image sizes for each element within the sizes
@@ -71,7 +69,7 @@ class Aperture(Command):
         # Determine the savings for each specified resolution
         # (or once if no resolutions provided)
         if res_keys == ['new']:
-            utl_o.log(
+            logger.log(
                 'Total savings: {}'.format(
                     utl_f.bytes_to_readable(sizes['orig'] - sizes['new'])),
                 'succ')
@@ -79,7 +77,7 @@ class Aperture(Command):
             for i in range(1, len(sizes)):
                 res = res_keys[i - 1]
                 res_str = '{}x{}'.format(res[0], res[1])
-                utl_o.log(
+                logger.log(
                     'Total savings for resolution {}: {}'.format(
                         res_str,
                         utl_f.bytes_to_readable(sizes['orig'] -

@@ -1,6 +1,6 @@
 import os, json
 import aperture.errors as errors
-import aperture.util.output as utl_o
+from aperture.util.output import apt_logger as logger
 
 OPTION_TYPES = {
     'outpath': 'str',
@@ -41,7 +41,7 @@ def read_config():
     config_file = select_config_file()
 
     if not config_file == '':
-        utl_o.log('Using config file \'{}\''.format(config_file), 'info')
+        logger.log('Using config file \'{}\''.format(config_file), 'info')
 
         try:
             with open(config_file, 'r') as config_json:

@@ -14,59 +14,75 @@ COLORS = {
 widths = (40, 40, 10)
 
 
-def init_logger(filename):
-    '''Initialize the logging.
+class ApertureLogger(object):
 
-    Args:
-        filename: A string containing the filename for the logger file.
-    '''
+    def __init__(self):
+        '''Constructor'''
+        self.__verbose = False
+        self.__log_file = None
 
-    # NOTE: logger is currently configured with append mode
-    logging.basicConfig(filename=filename, level=logging.INFO)
+    '''Getters and Setters'''
 
+    @property
+    def log_file(self):
+        return self.__log_file
 
-def log(message, level, verbose=False):
-    '''Print out a message to the console.
+    @log_file.setter
+    def log_file(self, f):
+        self.__log_file = f
+        logging.basicConfig(filename=self.log_file, level=logging.INFO)
 
-    Args:
-        message: A string containing the message to be printed.
-        level: A string containing the level of the message.
-        verbose: A boolean on whether the output should be printed to stdout.
+    @property
+    def verbose(self):
+        return self.__verbose
 
-    '''
+    @verbose.setter
+    def verbose(self, v):
+        self.__verbose = v
 
-    level = level.upper()
+    '''Class methods'''
 
-    if verbose or level == 'ERROR' or level == 'SUCC':
-        output = ''
+    def log(self, message, level):
+        '''Print out a message to the console.
 
-        # If the os is windows ignore coloring
-        if not os.name == 'nt':
-            output += COLORS[level]
+        Args:
+            message: A string containing the message to be printed.
+            level: A string containing the level of the message.
+        '''
 
-        print(output + message)
+        level = level.upper()
 
-        # Set the color to white after
-        if not os.name == 'nt':
-            sys.stdout.write(COLORS['INFO'])
+        if self.verbose or level == 'ERROR' or level == 'SUCC':
+            output = ''
 
-    logger = logging.getLogger()
-    if level == 'INFO' or level == 'SUCC':
-        logger.info(message)
-    elif level == 'WARN':
-        logger.warning(message)
-    elif level == 'ERROR':
-        logger.error(message)
+            # If the os is windows ignore coloring
+            if not os.name == 'nt':
+                output += COLORS[level]
+
+            print(output + message)
+
+            # Set the color to white after
+            if not os.name == 'nt':
+                sys.stdout.write(COLORS['INFO'])
+
+        if self.log_file is not None:
+            logger = logging.getLogger()
+            if level == 'INFO' or level == 'SUCC':
+                logger.info(message)
+            elif level == 'WARN':
+                logger.warning(message)
+            elif level == 'ERROR':
+                logger.error(message)
 
 
 def display_verbose_table(files):
     '''Displays the verbose output table for all processed image.
-    
-    Displays the file size comparison of the original an new image.
 
-    Args:
-        files: A dictionary containing tuples of filenames and filesizes for various resolutions.
-    '''
+        Displays the file size comparison of the original an new image.
+
+        Args:
+            files: A dictionary containing tuples of filenames and filesizes for various resolutions.
+        '''
 
     print('\n\t{} | {} | {}'.format('original'.ljust(widths[0]), 'result'.ljust(
         widths[1]), 'savings'.ljust(widths[2])))
@@ -110,7 +126,6 @@ def get_table_filename(file_tuple, color_ext=False):
         color_ext: A boolean whether the file's extension should be colored.
 
     '''
-
     filename = os.path.split(file_tuple[0])[1]
     filesize = '[{}]'.format(utl_f.bytes_to_readable(file_tuple[1]))
 
@@ -134,3 +149,6 @@ def get_table_filename(file_tuple, color_ext=False):
         ext = new_ext
 
     return '{}{}{}{}'.format(trunc_name, ext, ' ' * space_count, filesize)
+
+
+apt_logger = ApertureLogger()
