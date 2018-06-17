@@ -3,6 +3,7 @@ import aperture.util.files as utl_f
 
 COLORS = {
     'INFO': '\u001b[0m',
+    'EXTRAINFO': '\u001b[0m',
     'SUCC': '\u001b[32m',
     'WARN': '\u001b[33m',
     'ERROR': '\u001b[31m',
@@ -52,7 +53,7 @@ class ApertureLogger(object):
 
         level = level.upper()
 
-        if self.verbose or level == 'ERROR' or level == 'SUCC':
+        if self.verbose or level == 'ERROR' or level == 'SUCC' or level == 'EXTRAINFO':
             output = ''
 
             # If the os is windows ignore coloring
@@ -67,7 +68,7 @@ class ApertureLogger(object):
 
         if self.log_file is not None:
             logger = logging.getLogger()
-            if level == 'INFO' or level == 'SUCC':
+            if level == 'INFO' or level == 'SUCC' or level == 'EXTRAINFO':
                 logger.info(message)
             elif level == 'WARN':
                 logger.warning(message)

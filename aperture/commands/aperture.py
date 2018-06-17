@@ -68,20 +68,25 @@ class Aperture(Command):
 
         # Determine the savings for each specified resolution
         # (or once if no resolutions provided)
+
+        image_count_str = 'Input images: {} Output images: {}'
         if res_keys == ['new']:
             logger.log(
-                'Total savings: {}'.format(
-                    utl_f.bytes_to_readable(sizes['orig'] - sizes['new'])),
-                'succ')
+                image_count_str.format(len(inputs), len(inputs)), 'extrainfo')
+            logger.log('Total savings: {}'.format(
+                utl_f.bytes_to_readable(sizes['orig'] - sizes['new'])), 'succ')
         else:
+            logger.log(
+                image_count_str.format(
+                    len(inputs),
+                    len(inputs) * (len(sizes) - 1)), 'extrainfo')
             for i in range(1, len(sizes)):
                 res = res_keys[i - 1]
                 res_str = '{}x{}'.format(res[0], res[1])
-                logger.log(
-                    'Total savings for resolution {}: {}'.format(
-                        res_str,
-                        utl_f.bytes_to_readable(sizes['orig'] -
-                                                sizes[list(sizes)[i]])), 'succ')
+                logger.log('Total savings for resolution {}: {}'.format(
+                    res_str,
+                    utl_f.bytes_to_readable(
+                        sizes['orig'] - sizes[list(sizes)[i]])), 'succ')
 
 
 def get_image_out_path(image, orig_path, out_path, options):
