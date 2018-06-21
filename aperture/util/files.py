@@ -36,6 +36,8 @@ def get_files_in_directory_recursive(directory, max_depth=MAX_RECURSTION_DEPTH):
 def bytes_to_readable(bytes):
     if bytes < 0:
         return '<0 B '
+    elif bytes == 0:
+        return '0 B '
     else:
         mem_sizes = ('B ', 'KB', 'MB', 'GB', 'TB')
         level = math.floor(math.log(bytes, 1024))

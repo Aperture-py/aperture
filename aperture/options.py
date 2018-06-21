@@ -9,8 +9,9 @@ from aperturelib import SUPPORTED_EXTENSIONS
 
 DEFAULT_QUALITY = 75
 QUALITY_MIN = 1
-QUALITY_MAX = 100
+QUALITY_MAX = 95
 DEFAULT_DIR = os.getcwd()
+GIF_WARN = False
 
 
 def deserialize_options(options, config_dict):
@@ -131,6 +132,8 @@ def parse_inputs(inputs, depth):
     Raises:
         ApertureError: An error occured when parsing the input paths.
     '''
+    global GIF_WARN
+    GIF_WARN = False
     file_paths = []
     inputs = [DEFAULT_DIR] if inputs is None or inputs == '.' else inputs
     for path in inputs:
@@ -182,7 +185,7 @@ def parse_quality(quality):
     Raises:
         ApertureError: An error occured parsing the quality value.
     '''
-    err = 'Supplied quality value \'{}\' is not valid. Quality value must be between 1 and 100'.format(
+    err = 'Supplied quality value \'{}\' is not valid. Quality value must be between 1 and 95'.format(
         quality)
 
     try:
@@ -274,4 +277,24 @@ def is_compatible_file(path, extensions):
     Returns:
         A boolean indicating whether or not the file is a compatible image file.
     '''
-    return os.path.splitext(path)[1].lower() in extensions
+    ext = os.path.splitext(path)[1].lower()
+    global GIF_WARN
+    if not GIF_WARN:
+        warn_gif(path, ext)
+
+    return ext in extensions
+
+
+def warn_gif(path, ext):
+    '''Warns user that animated GIF's are not supported.
+
+    Args:
+        path: A string containing a path to the file.
+        ext: File extension of the provided path.
+    '''
+    if ext == '.gif':
+        logger.log(
+            'GIF file(s) entered as input: Aperture does not support animated GIF\'s. Animated GIF\'s will only have their first frame saved.',
+            'warn')
+        global GIF_WARN
+        GIF_WARN = True
