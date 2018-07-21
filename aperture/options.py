@@ -35,13 +35,17 @@ def deserialize_options(options, config_dict):
     resolutions = cfg_f.config_or_provided('resolutions', config_dict, options)
     verbose = cfg_f.config_or_provided('verbose', config_dict, options)
     depth = cfg_f.config_or_provided('max-depth', config_dict, options)
+    log = cfg_f.config_or_provided('log', config_dict, options)
     watermark_image = cfg_f.config_or_provided('wmark-img', config_dict,
                                                options)
     watermark_text = cfg_f.config_or_provided('wmark-txt', config_dict, options)
 
     # Parse and extract the values from the options to be sent into aperture.
     deserialized['verbose'] = verbose
+    deserialized['log'] = log
     logger.verbose = verbose
+    if log:
+        logger.log_file = '{}{}{}'.format(os.getcwd(), os.sep, '.aperture.log')
     deserialized['max-depth'] = parse_recursion_depth(depth)
     deserialized['inputs'] = parse_inputs(inputs, deserialized['max-depth'])
     deserialized['output'] = parse_outpath(outpath)

@@ -7,12 +7,13 @@ OPTION_TYPES = {
     'quality': 'int',
     'resolutions': 'str',
     'verbose': 'bool',
+    'log': 'bool',
     'max-depth': 'int',
     'wmark-img': 'str',
     'wmark-txt': 'str'
 }
 
-OPTION_DEFAULTS = {'quality': 75, 'max-depth': 0}
+OPTION_DEFAULTS = {'quality': 75, 'max-depth': 10}
 
 SUPPORTED_CONFIG_FILES = ['.aperture', 'aperture.json', 'aperturerc']
 
@@ -24,6 +25,7 @@ def config_or_provided(option_key, config_dict, options_dict):
     flag = '--' + option_key
 
     # wasn't provided in terminal, so we have to check conf file
+    print(options_dict)
     if ((OPTION_TYPES[option_key] == 'bool' and options_dict[flag] is False) or
             options_dict[flag] is None):
         if config_dict is not None and option_key in config_dict:

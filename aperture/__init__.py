@@ -11,9 +11,10 @@ Options:
   -o <opath>, --outpath <opath>     Pass output location for the processed images.
   -q <qual>, --quality <qual>       Pass quality level applied to each image.        [default = 75]
   -r <res>, --resolutions <res>     Pass set of resolutions applied to each image.
-  -m <depth>, --max-depth <depth>   Maximum recursion depth for directory traversal. [default = 0]
+  -m <depth>, --max-depth <depth>   Maximum recursion depth for directory traversal. [default = 10]
   -w <wmimg>, --wmark-img <wmimg>   Pass location of a watermark image.
   -t <wmtxt>, --wmark-txt <wmtxt>   Pass text to be added on top of input images.
+  -l --log                          Create a log file in the current working directory.
   -v --verbose                      Output real-time processing statistics.
 
 Examples:
@@ -51,7 +52,6 @@ def main():
         print(__doc__)
         return 0
     else:
-        logger.log_file = '{}{}{}'.format(os.getcwd(), os.sep, '.aperture.log')
         config = conf.read_config()
         options_ds = deserialize_options(options, config)
         ap = aperture.commands.Aperture(options_ds)

@@ -30,6 +30,7 @@ class DeserializeOptionsTest(unittest.TestCase):
         _touch_files([self.file])
         self.arg_opts = {
             '<input>': [self.file],
+            '--log': False,
             '--quality': 25,
             '--resolutions': '800x800 400x400',
             '--verbose': False,
@@ -39,6 +40,7 @@ class DeserializeOptionsTest(unittest.TestCase):
             '--wmark-txt': 'text'
         }
         self.cfg_opts = {
+            'log': False,
             'quality': 90,
             'resolutions': '700x700',
             'verbose': True,
@@ -53,6 +55,7 @@ class DeserializeOptionsTest(unittest.TestCase):
 
     def test_cmd_arg_opts(self):
         ds_opts = {
+            'log': False,
             'inputs': [self.file],
             'quality': 25,
             'resolutions': [(800, 800), (400, 400)],
@@ -76,6 +79,7 @@ class DeserializeOptionsTest(unittest.TestCase):
         self.arg_opts['--wmark-img'] = None
         self.arg_opts['--wmark-txt'] = None
         ds_opts = {
+            'log': False,
             'inputs': [self.file],
             'quality': 90,
             'resolutions': [(700, 700)],
