@@ -25,7 +25,6 @@ def config_or_provided(option_key, config_dict, options_dict):
     flag = '--' + option_key
 
     # wasn't provided in terminal, so we have to check conf file
-    print(options_dict)
     if ((OPTION_TYPES[option_key] == 'bool' and options_dict[flag] is False) or
             options_dict[flag] is None):
         if config_dict is not None and option_key in config_dict:
