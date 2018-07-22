@@ -12,7 +12,7 @@ with open('LICENSE') as f:
 __version__ = '0.0.0dev1'
 
 setup(
-    name='aperture',
+    name='aperture-cli',
     version=__version__,
     description='An image re-sizing and compression tool',
     long_description=readme,
