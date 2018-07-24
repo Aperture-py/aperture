@@ -8,12 +8,12 @@ Usage:
   aperture <input>... [options]
 
 Options:
-  -o <opath>, --outpath <opath>     Pass output location for the processed images.
-  -q <qual>, --quality <qual>       Pass quality level applied to each image.        [default = 75]
-  -r <res>, --resolutions <res>     Pass set of resolutions applied to each image.
+  -o <opath>, --outpath <opath>     Output location for the processed images.
+  -q <qual>, --quality <qual>       Quality level applied to each image.             [default = 75]
+  -r <res>, --resolutions <res>     List of resolutions applied to each image.
   -m <depth>, --max-depth <depth>   Maximum recursion depth for directory traversal. [default = 10]
-  -w <wmimg>, --wmark-img <wmimg>   Pass location of a watermark image.
-  -t <wmtxt>, --wmark-txt <wmtxt>   Pass text to be added on top of input images.
+  -w <wmimg>, --wmark-img <wmimg>   Location of a watermark image.
+  -t <wmtxt>, --wmark-txt <wmtxt>   Text to be added on top of input images.
   -l --log                          Create a log file in the current working directory.
   -v --verbose                      Output real-time processing statistics.
 
@@ -27,7 +27,7 @@ Examples:
   aperture images/ -o out/ -r "800x800 400x400 200x200" -q 60 -v
 
 Help:
-  <inputs>  Can be file(s) or directory. Images must be: .jpg .jpeg .png
+  <input> Can be file(s) or a directory containing files. Images must be: .jpg .jpeg .png
 '''
 
 from docopt import docopt, DocoptExit
@@ -39,7 +39,7 @@ import sys, os
 
 # Aperture imports
 # How this version was chosen - https://packaging.python.org/tutorials/distributing-packages/#choosing-a-versioning-scheme
-__version__ = '0.0.0dev1'
+__version__ = '1.0.0'
 
 import aperture.commands
 

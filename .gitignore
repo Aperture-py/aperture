@@ -8,6 +8,7 @@ __pycache__
 *.JPEG
 *.png
 *.gif
+.pypirc
 
 .aperture
 aperture.json

@@ -9,7 +9,7 @@ with open('LICENSE') as f:
     license = f.read()
 
 # How this version was chosen - https://packaging.python.org/tutorials/distributing-packages/#choosing-a-versioning-scheme
-__version__ = '0.0.0dev1'
+__version__ = '1.0.0'
 
 setup(
     name='aperture-cli',

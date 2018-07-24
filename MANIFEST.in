@@ -2,3 +2,8 @@
 include LICENSE
 include README.md
 exclude .gitignore
+exclude Pipfile
+exclude Pipefile.lock
+exclude .vscode
+exclude .pylintrc
+exclude .pypirc

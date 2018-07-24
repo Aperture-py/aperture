@@ -15,3 +15,9 @@ lint:
 document:
 	sphinx-apidoc -o docs/ aperture/ -e -M -F
 	sphinx-build -a -b html docs/ docs/_build
+
+dist:
+	python setup.py sdist bdist_wheel
+
+deploy-prod:
+	twine upload dist/* --config-file .pypirc
