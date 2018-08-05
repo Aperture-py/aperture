@@ -1,5 +1,25 @@
 # Directories
 __pycache__
+.vscode
 
 # Files
 .DS_Store
+*.jpg
+*.JPEG
+*.png
+*.gif
+.pypirc
+
+.aperture
+aperture.json
+aperturerc
+.aperture.log
+
+# Build artifacts
+*.egg-info
+build
+dist
+
+# Doc Files
+docs/**
+!docs/conf.py

@@ -4,11 +4,16 @@ verify_ssl = true
 name = "pypi"
 
 [packages]
+aperturelib = "*"
 
 [dev-packages]
 pylint = "*"
 yapf = "*"
 wheel = "*"
+pylint-quotes = "*"
+sphinx = "*"
+sphinx-rtd-theme = "*"
+twine = "*"
 
 [requires]
 python_version = "3.6"
